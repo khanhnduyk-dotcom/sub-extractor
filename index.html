@@ -490,6 +490,15 @@
       G('workersArea').innerHTML = '';
       setProgress(0, 'Đang đọc file...');
 
+      // Clear and show subtitle area for streaming
+      srtEntries = [];
+      srtContent = '';
+      G('subList').innerHTML = '';
+      G('emptyState').style.display = 'none';
+      G('subtitleArea').style.display = 'flex';
+      G('editorInfo').textContent = '⏳ Đang tách...';
+      streamIdx = 0;
+
       const reader = new FileReader();
       reader.onload = async function(e) {
         const base64 = e.target.result.split(',')[1];
@@ -523,6 +532,8 @@
               setProgress(data.percent || 0, data.message || '');
             } else if (data.type === 'worker') {
               updateWorker(data);
+            } else if (data.type === 'partial') {
+              handlePartial(data);
             } else if (data.type === 'result') {
               handleResult(data);
             } else if (data.type === 'error') {
@@ -570,6 +581,42 @@
         <span class="worker-tag ${tagClass}">${data.provider}</span>
         <span class="worker-msg">${icon} ${data.message || ''}</span>
       `;
+    }
+
+    let streamIdx = 0;
+
+    function handlePartial(data) {
+      const entries = data.entries || [];
+      const list = G('subList');
+
+      entries.forEach((entry, i) => {
+        streamIdx++;
+        const row = document.createElement('div');
+        row.className = 'sub-row fade-in';
+        row.style.animationDelay = Math.min(i * 30, 300) + 'ms';
+
+        const start = entry.start || '00:00:00,000';
+        const end = entry.end || '00:00:00,000';
+
+        row.innerHTML = `
+          <div class="sub-cell col-idx">${streamIdx}</div>
+          <div class="sub-cell col-time">${start} → ${end}</div>
+          <div class="sub-cell col-text">
+            <textarea class="sub-textarea" rows="1" readonly>${entry.text || ''}</textarea>
+          </div>
+        `;
+        list.appendChild(row);
+
+        // Auto-resize & scroll into view
+        setTimeout(() => {
+          const ta = row.querySelector('.sub-textarea');
+          if (ta) autoResize(ta);
+          row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 20);
+      });
+
+      G('editorInfo').textContent = `⏳ ${streamIdx} segments (đang tách...)`;
+      setStatus(`⏳ Đã tách ${streamIdx} segments... [${data.source || ''}]`);
     }
 
     function handleResult(data) {

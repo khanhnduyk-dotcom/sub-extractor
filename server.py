@@ -375,6 +375,12 @@ async def websocket_transcribe(ws: WebSocket):
                             "type": "worker", "provider": "groq", "worker_id": i + 1,
                             "status": "done", "message": f"Groq #{i+1}: {len(entries)} segments ✅"
                         })
+                        # Stream partial results immediately
+                        await ws.send_json({
+                            "type": "partial",
+                            "entries": entries,
+                            "source": f"groq-{i+1}"
+                        })
                 except Exception as e:
                     err_msg = str(e)[:100]
                     errors.append(f"Groq #{i+1}: {err_msg}")
@@ -428,6 +434,12 @@ async def websocket_transcribe(ws: WebSocket):
                         "type": "worker", "provider": "gemini", "worker_id": 1,
                         "status": "done", "message": f"Gemini #1: {len(entries)} segments ✅"
                     })
+                    # Stream partial results immediately
+                    await ws.send_json({
+                        "type": "partial",
+                        "entries": entries,
+                        "source": "gemini-1"
+                    })
                 except Exception as e:
                     errors.append(f"Gemini #1: {str(e)[:100]}")
                     await ws.send_json({
@@ -469,6 +481,12 @@ async def websocket_transcribe(ws: WebSocket):
                             "type": "worker", "provider": "gemini", "worker_id": idx + 1,
                             "status": "done",
                             "message": f"Gemini #{idx+1}: {len(entries)} segments ✅"
+                        })
+                        # Stream partial results immediately
+                        await ws.send_json({
+                            "type": "partial",
+                            "entries": entries,
+                            "source": f"gemini-{idx+1}"
                         })
                         return entries
                     except Exception as e:
