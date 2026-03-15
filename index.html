@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SubExtractor — Tách Phụ Đề AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #12121a;
+      --bg3: #1a1a28;
+      --card: #15152a;
+      --border: #2a2a45;
+      --border2: #3a3a55;
+      --text: #e8e8f0;
+      --text2: #a0a0b8;
+      --text3: #6a6a85;
+      --accent: #8b5cf6;
+      --accent2: #a78bfa;
+      --glow: rgba(139, 92, 246, .15);
+      --green: #22c55e;
+      --green-bg: rgba(34, 197, 94, .1);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, .1);
+      --yellow: #eab308;
+      --yellow-bg: rgba(234, 179, 8, .1);
+      --r: 12px;
+      --rs: 8px;
+      --font: 'Inter', system-ui, sans-serif;
+    }
+
+    html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); overflow: hidden; }
+
+    button { font-family: inherit; cursor: pointer; border: none; outline: none; }
+    input, textarea, select {
+      font-family: inherit; outline: none; background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px; padding: 8px 12px; font-size: 13px; width: 100%; transition: border-color .15s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── Layout ── */
+    .app { display: flex; flex-direction: column; height: 100vh; }
+
+    .header {
+      display: flex; align-items: center; gap: 12px; padding: 12px 24px;
+      background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .logo {
+      font-size: 18px; font-weight: 900;
+      background: linear-gradient(135deg, var(--accent), #f472b6);
+      background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .logo-sub { font-size: 11px; color: var(--text3); margin-left: 4px; }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .badge {
+      font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: 700;
+    }
+    .badge-idle { background: var(--bg3); color: var(--text3); }
+    .badge-work { background: var(--glow); color: var(--accent2); animation: pulse 2s infinite; }
+    .badge-done { background: var(--green-bg); color: var(--green); }
+    .badge-err { background: var(--red-bg); color: var(--red); }
+
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+
+    .main { flex: 1; display: flex; overflow: hidden; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 360px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border);
+      overflow-y: auto; display: flex; flex-direction: column;
+    }
+    .section { padding: 16px; border-bottom: 1px solid var(--border); }
+    .section-title {
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--text3); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .section-num {
+      width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff;
+      font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-num.done { background: var(--green); }
+
+    .label { font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 5px; display: block; margin-top: 10px; }
+    .label:first-child { margin-top: 0; }
+
+    /* ── Dropzone ── */
+    .dropzone {
+      border: 2px dashed var(--border); border-radius: var(--r); padding: 32px 16px;
+      text-align: center; cursor: pointer; transition: all .2s; position: relative;
+    }
+    .dropzone:hover, .dropzone.active { border-color: var(--accent); background: var(--glow); }
+    .dropzone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .dz-icon { font-size: 36px; margin-bottom: 8px; }
+    .dz-text { font-size: 14px; font-weight: 600; color: var(--text2); }
+    .dz-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+    .file-info {
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      background: var(--glow); border: 1px solid rgba(139, 92, 246, .2); border-radius: 8px; margin-top: 10px;
+    }
+    .file-info-icon { font-size: 20px; }
+    .file-info-name { font-size: 12px; font-weight: 700; color: var(--accent2); flex: 1; word-break: break-all; }
+    .file-info-size { font-size: 10px; color: var(--text3); }
+    .file-info-rm { background: none; color: var(--text3); padding: 2px 6px; border-radius: 4px; font-size: 14px; }
+    .file-info-rm:hover { color: var(--red); }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 700;
+      transition: all .15s; letter-spacing: .2px; width: 100%;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #7c3aed); color: #fff;
+      box-shadow: 0 4px 15px rgba(139, 92, 246, .3);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(139, 92, 246, .4); }
+    .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-secondary { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); color: var(--text); }
+    .btn-success { background: var(--green); color: #fff; }
+    .btn-success:hover { opacity: .85; }
+
+    /* ── Progress ── */
+    .progress-area { display: none; margin-top: 12px; }
+    .progress-bar {
+      width: 100%; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin: 6px 0;
+    }
+    .progress-fill {
+      height: 100%; background: linear-gradient(90deg, var(--accent), #f472b6);
+      border-radius: 3px; transition: width .4s ease; width: 0%;
+    }
+    .progress-text { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); font-weight: 600; }
+    .progress-status { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+    /* ── Editor Panel ── */
+    .editor { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .editor-header {
+      display: flex; align-items: center; gap: 12px; padding: 10px 20px;
+      background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .editor-title { font-size: 12px; font-weight: 700; color: var(--text2); }
+    .editor-info { font-size: 11px; color: var(--text3); margin-left: auto; }
+
+    .editor-toolbar {
+      display: flex; align-items: center; gap: 8px; padding: 8px 20px;
+      background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .toolbar-btn {
+      padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      background: var(--bg3); color: var(--text2); border: 1px solid var(--border); transition: all .15s;
+    }
+    .toolbar-btn:hover { border-color: var(--accent); color: var(--accent2); background: var(--glow); }
+
+    /* ── Subtitle Table ── */
+    .sub-header {
+      display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg2);
+    }
+    .sub-header-col {
+      padding: 8px 14px; font-size: 9px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--text3);
+    }
+    .col-idx { width: 50px; text-align: center; border-right: 1px solid var(--border); }
+    .col-time { width: 220px; border-right: 1px solid var(--border); }
+    .col-text { flex: 1; }
+
+    .sub-list { flex: 1; overflow-y: auto; }
+
+    .sub-row {
+      display: flex; border-bottom: 1px solid var(--border); transition: background .1s;
+    }
+    .sub-row:hover { background: var(--bg3); }
+
+    .sub-cell { padding: 10px 14px; font-size: 13px; line-height: 1.6; }
+    .sub-cell.col-idx {
+      width: 50px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text3);
+      border-right: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+    }
+    .sub-cell.col-time {
+      width: 220px; border-right: 1px solid var(--border); font-family: 'Consolas', monospace;
+      font-size: 11px; color: var(--accent2); display: flex; align-items: center;
+    }
+    .sub-cell.col-text { flex: 1; }
+
+    .sub-textarea {
+      background: transparent; border: none; color: var(--text); font-size: 13px; line-height: 1.6;
+      width: 100%; resize: none; font-family: var(--font); padding: 0;
+    }
+    .sub-textarea:focus { outline: none; background: var(--glow); border-radius: 4px; padding: 4px; margin: -4px; }
+
+    /* ── Empty State ── */
+    .empty-state {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--text3); gap: 12px;
+    }
+    .empty-icon { font-size: 64px; opacity: .3; }
+    .empty-text { font-size: 16px; font-weight: 600; }
+    .empty-sub { font-size: 12px; }
+
+    /* ── Status Bar ── */
+    .statusbar {
+      display: flex; align-items: center; gap: 12px; padding: 6px 20px;
+      background: var(--bg2); border-top: 1px solid var(--border); flex-shrink: 0;
+      font-size: 11px; color: var(--text3);
+    }
+
+    /* ── Animation ── */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn .3s ease; }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .shimmer {
+      background: linear-gradient(90deg, var(--bg3) 25%, var(--border) 50%, var(--bg3) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">🎧 SubExtractor</div>
+      <span class="logo-sub">AI Subtitle Generator</span>
+      <div class="header-right">
+        <span id="langBadge" style="display:none; font-size:11px; padding:3px 10px; border-radius:20px; background:var(--glow); color:var(--accent2); font-weight:700;"></span>
+        <span id="badge" class="badge badge-idle">SẴN SÀNG</span>
+      </div>
+    </div>
+
+    <div class="main">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <!-- Step 1: Upload -->
+        <div class="section">
+          <div class="section-title">
+            <div class="section-num" id="stepNum1">1</div>
+            CHỌN FILE AUDIO / VIDEO
+          </div>
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="fileInput" accept=".mp3,.wav,.aac,.ogg,.flac,.aiff,.m4a,.mp4,.mkv,.webm,.mov">
+            <div class="dz-icon">🎵</div>
+            <div class="dz-text">Kéo thả file vào đây</div>
+            <div class="dz-sub">MP3, WAV, AAC, OGG, FLAC, MP4, MKV, WebM</div>
+          </div>
+          <div id="fileInfoArea" style="display:none;">
+            <div class="file-info" id="fileInfo">
+              <span class="file-info-icon">🎵</span>
+              <span class="file-info-name" id="fileName"></span>
+              <span class="file-info-size" id="fileSize"></span>
+              <button class="file-info-rm" onclick="clearFile()">✕</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: API Key -->
+        <div class="section">
+          <div class="section-title">
+            <div class="section-num" id="stepNum2">2</div>
+            CẤU HÌNH
+          </div>
+          <label class="label">🔑 Gemini API Key</label>
+          <input type="password" id="apiKey" placeholder="Dán API key từ aistudio.google.com">
+          <label class="label">🤖 Model</label>
+          <select id="modelSelect">
+            <option value="gemini-2.5-flash">⚡ Gemini 2.5 Flash (nhanh)</option>
+            <option value="gemini-2.5-pro">🧠 Gemini 2.5 Pro (chính xác)</option>
+            <option value="gemini-2.0-flash">⚡ Gemini 2.0 Flash</option>
+          </select>
+        </div>
+
+        <!-- Step 3: Action -->
+        <div class="section">
+          <div class="section-title">
+            <div class="section-num" id="stepNum3">3</div>
+            TÁCH PHỤ ĐỀ
+          </div>
+          <button class="btn btn-primary" id="btnStart" onclick="startTranscription()" disabled>
+            🎯 Bắt đầu tách phụ đề
+          </button>
+          <div class="progress-area" id="progressArea">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="progress-text">
+              <span id="progressLabel">Đang xử lý...</span>
+              <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-status" id="progressStatus"></div>
+          </div>
+        </div>
+
+        <!-- Step 4: Download -->
+        <div class="section" id="downloadSection" style="display:none;">
+          <div class="section-title">
+            <div class="section-num done">✓</div>
+            TẢI VỀ
+          </div>
+          <button class="btn btn-success" onclick="downloadSRT()">
+            💾 Tải file SRT
+          </button>
+          <button class="btn btn-secondary" style="margin-top:6px;" onclick="copySRT()">
+            📋 Copy nội dung SRT
+          </button>
+        </div>
+      </div>
+
+      <!-- Editor -->
+      <div class="editor">
+        <div class="editor-header">
+          <span class="editor-title">📝 Phụ đề</span>
+          <span class="editor-info" id="editorInfo"></span>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">🎧</div>
+          <div class="empty-text">Chưa có phụ đề</div>
+          <div class="empty-sub">Upload file audio/video và nhấn "Tách phụ đề" để bắt đầu</div>
+        </div>
+
+        <!-- Subtitle table (hidden until results) -->
+        <div id="subtitleArea" style="display:none; flex:1; display:none; flex-direction:column; overflow:hidden;">
+          <div class="editor-toolbar">
+            <button class="toolbar-btn" onclick="downloadSRT()">💾 Tải SRT</button>
+            <button class="toolbar-btn" onclick="copySRT()">📋 Copy</button>
+            <button class="toolbar-btn" onclick="selectAll()">☑️ Chọn tất cả</button>
+          </div>
+          <div class="sub-header">
+            <div class="sub-header-col col-idx">#</div>
+            <div class="sub-header-col col-time">THỜI GIAN</div>
+            <div class="sub-header-col col-text">NỘI DUNG</div>
+          </div>
+          <div class="sub-list" id="subList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="statusbar">
+      <span id="statusText">Sẵn sàng</span>
+    </div>
+  </div>
+
+  <script>
+    // ── State ──
+    let selectedFile = null;
+    let srtContent = '';
+    let srtEntries = [];
+    let srtFileName = 'output.srt';
+    let ws = null;
+
+    // ── DOM helpers ──
+    const G = id => document.getElementById(id);
+
+    // ── File handling ──
+    const dropzone = G('dropzone');
+    const fileInput = G('fileInput');
+
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('active'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('active'));
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault(); dropzone.classList.remove('active');
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+    function handleFile(file) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const allowed = ['mp3','wav','aac','ogg','flac','aiff','m4a','mp4','mkv','webm','mov'];
+      if (!allowed.includes(ext)) {
+        setStatus('❌ File không hỗ trợ. Dùng MP3, WAV, AAC, OGG, FLAC, MP4, MKV...', 'err');
+        return;
+      }
+      selectedFile = file;
+      G('fileName').textContent = file.name;
+      G('fileSize').textContent = formatSize(file.size);
+      G('fileInfoArea').style.display = '';
+      dropzone.style.display = 'none';
+      G('stepNum1').classList.add('done');
+      G('stepNum1').textContent = '✓';
+      updateStartBtn();
+      setStatus(`📁 Đã chọn: ${file.name}`);
+    }
+
+    function clearFile() {
+      selectedFile = null;
+      G('fileInfoArea').style.display = 'none';
+      dropzone.style.display = '';
+      G('stepNum1').classList.remove('done');
+      G('stepNum1').textContent = '1';
+      fileInput.value = '';
+      updateStartBtn();
+      setStatus('Sẵn sàng');
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    // ── API Key ──
+    G('apiKey').addEventListener('input', () => {
+      updateStartBtn();
+      // Save to localStorage
+      localStorage.setItem('subex_api_key', G('apiKey').value);
+    });
+
+    // Load saved key
+    const savedKey = localStorage.getItem('subex_api_key');
+    if (savedKey) G('apiKey').value = savedKey;
+
+    function updateStartBtn() {
+      G('btnStart').disabled = !(selectedFile && G('apiKey').value.trim());
+    }
+    updateStartBtn();
+
+    // ── Transcription ──
+    async function startTranscription() {
+      if (!selectedFile || !G('apiKey').value.trim()) return;
+
+      const btn = G('btnStart');
+      btn.disabled = true;
+      btn.textContent = '⏳ Đang xử lý...';
+      setBadge('work', 'ĐANG TÁ​CH...');
+      G('progressArea').style.display = '';
+      setProgress(0, 'Đang đọc file...');
+
+      // Read file as base64
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const base64 = e.target.result.split(',')[1];
+        setProgress(5, 'Đang kết nối...');
+
+        // Connect WebSocket
+        const loc = window.location;
+        const wsProto = loc.protocol === 'https:' ? 'wss://' : 'ws://';
+        const wsHost = loc.host || 'localhost:8000';
+        const wsUrl = wsProto + wsHost + '/ws/transcribe';
+
+        try {
+          ws = new WebSocket(wsUrl);
+
+          ws.onopen = () => {
+            // Send config
+            ws.send(JSON.stringify({
+              file_data: base64,
+              file_name: selectedFile.name,
+              api_key: G('apiKey').value.trim(),
+              model_name: G('modelSelect').value,
+            }));
+            setProgress(8, 'File đã gửi, đang upload lên Gemini...');
+          };
+
+          ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'progress') {
+              setProgress(data.percent || 0, data.message || 'Đang xử lý...');
+            } else if (data.type === 'result') {
+              handleResult(data);
+            } else if (data.type === 'error') {
+              setStatus('❌ ' + data.message, 'err');
+              setBadge('err', 'LỖI');
+              btn.disabled = false;
+              btn.textContent = '🎯 Bắt đầu tách phụ đề';
+              G('progressArea').style.display = 'none';
+            }
+          };
+
+          ws.onerror = () => {
+            setStatus('❌ Không thể kết nối server', 'err');
+            setBadge('err', 'LỖI');
+            btn.disabled = false;
+            btn.textContent = '🎯 Bắt đầu tách phụ đề';
+            G('progressArea').style.display = 'none';
+          };
+
+          ws.onclose = () => {
+            ws = null;
+          };
+
+        } catch (err) {
+          setStatus('❌ Lỗi: ' + err.message, 'err');
+          btn.disabled = false;
+          btn.textContent = '🎯 Bắt đầu tách phụ đề';
+          G('progressArea').style.display = 'none';
+        }
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+
+    function handleResult(data) {
+      srtContent = data.srt;
+      srtEntries = data.entries;
+      srtFileName = data.file_name;
+      const language = data.language;
+      const total = data.total_segments;
+
+      // Show language badge
+      G('langBadge').textContent = '🌐 ' + language;
+      G('langBadge').style.display = '';
+
+      // Update UI
+      setBadge('done', 'HOÀN TẤT');
+      setProgress(100, `✅ ${total} phụ đề — ${language}`);
+      setStatus(`✅ Tách thành công ${total} phụ đề — Ngôn ngữ: ${language}`);
+      G('editorInfo').textContent = `${total} segments • ${language}`;
+
+      // Show download section
+      G('downloadSection').style.display = '';
+      G('stepNum3').classList.add('done');
+      G('stepNum3').textContent = '✓';
+
+      // Render subtitle table
+      renderSubtitles(srtEntries);
+
+      // Reset button
+      const btn = G('btnStart');
+      btn.disabled = false;
+      btn.textContent = '🎯 Bắt đầu tách phụ đề';
+
+      document.title = `✅ ${total} sub — SubExtractor`;
+    }
+
+    function renderSubtitles(entries) {
+      G('emptyState').style.display = 'none';
+      const area = G('subtitleArea');
+      area.style.display = 'flex';
+
+      const list = G('subList');
+      list.innerHTML = '';
+
+      entries.forEach((entry, i) => {
+        const row = document.createElement('div');
+        row.className = 'sub-row fade-in';
+        row.style.animationDelay = Math.min(i * 20, 500) + 'ms';
+
+        const start = entry.start || '00:00:00,000';
+        const end = entry.end || '00:00:00,000';
+
+        row.innerHTML = `
+          <div class="sub-cell col-idx">${entry.index || i + 1}</div>
+          <div class="sub-cell col-time">${start} → ${end}</div>
+          <div class="sub-cell col-text">
+            <textarea class="sub-textarea" rows="1" data-idx="${i}"
+              oninput="autoResize(this); updateEntry(${i}, this.value)">${entry.text || ''}</textarea>
+          </div>
+        `;
+        list.appendChild(row);
+
+        // Auto-resize textarea
+        setTimeout(() => {
+          const ta = row.querySelector('.sub-textarea');
+          if (ta) autoResize(ta);
+        }, 10);
+      });
+    }
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = el.scrollHeight + 'px';
+    }
+
+    function updateEntry(idx, text) {
+      if (srtEntries[idx]) {
+        srtEntries[idx].text = text;
+        regenerateSRT();
+      }
+    }
+
+    function regenerateSRT() {
+      const lines = [];
+      srtEntries.forEach((entry, i) => {
+        const idx = entry.index || (i + 1);
+        const start = entry.start || '00:00:00,000';
+        const end = entry.end || '00:00:00,000';
+        const text = (entry.text || '').trim();
+        if (text) {
+          lines.push(idx);
+          lines.push(start + ' --> ' + end);
+          lines.push(text);
+          lines.push('');
+        }
+      });
+      srtContent = lines.join('\n');
+    }
+
+    // ── Download / Copy ──
+    function downloadSRT() {
+      if (!srtContent) return;
+      const blob = new Blob([srtContent], { type: 'text/plain; charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = srtFileName;
+      a.click();
+      URL.revokeObjectURL(url);
+      setStatus('💾 Đã tải ' + srtFileName);
+    }
+
+    function copySRT() {
+      if (!srtContent) return;
+      navigator.clipboard.writeText(srtContent).then(() => {
+        setStatus('📋 Đã copy nội dung SRT');
+      });
+    }
+
+    function selectAll() {
+      const textareas = document.querySelectorAll('.sub-textarea');
+      textareas.forEach(ta => ta.select());
+    }
+
+    // ── UI Helpers ──
+    function setBadge(type, text) {
+      const el = G('badge');
+      el.className = 'badge badge-' + (type === 'work' ? 'work' : type === 'done' ? 'done' : type === 'err' ? 'err' : 'idle');
+      el.textContent = text;
+    }
+
+    function setProgress(percent, message) {
+      G('progressFill').style.width = percent + '%';
+      G('progressPercent').textContent = percent + '%';
+      if (message) G('progressLabel').textContent = message;
+    }
+
+    function setStatus(text, type) {
+      G('statusText').textContent = text;
+      document.title = text.replace(/[❌✅💾📋📁⏳🎯]/g, '').trim() + ' — SubExtractor';
+    }
+
+    // ── Init ──
+    updateStartBtn();
+  </script>
+</body>
+</html>
