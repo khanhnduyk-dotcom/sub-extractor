@@ -99,6 +99,15 @@
     .worker-tag.groq { background: var(--orange-bg); color: var(--orange); }
     .worker-msg { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+    .log-area { margin-top: 8px; max-height: 180px; overflow-y: auto; background: #0d0d15; border: 1px solid var(--border); border-radius: 8px; padding: 6px 0; font-family: 'Consolas', monospace; font-size: 10px; }
+    .log-line { padding: 2px 10px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
+    .log-line.info { color: var(--text2); }
+    .log-line.ok { color: var(--green); }
+    .log-line.warn { color: var(--orange); }
+    .log-line.err { color: var(--red); }
+    .log-line.accent { color: var(--accent2); }
+    .log-time { color: var(--text3); margin-right: 6px; }
+
     .editor { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     .editor-header { display: flex; align-items: center; gap: 12px; padding: 10px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .editor-title { font-size: 12px; font-weight: 700; color: var(--text2); }
@@ -185,6 +194,7 @@
             <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
             <div class="progress-text"><span id="progressLabel">...</span><span id="progressPercent">0%</span></div>
             <div class="workers-area" id="workersArea"></div>
+            <div class="log-area" id="logArea" style="display:none;"></div>
           </div>
         </div>
 
@@ -274,6 +284,19 @@
     function updateStartBtn() { G('btnStart').disabled = !(selectedFile && getKeys().length > 0); }
     updateStartBtn();
 
+    // ── Activity Log ──
+    function addLog(msg, type = 'info') {
+      const area = G('logArea');
+      area.style.display = '';
+      const line = document.createElement('div');
+      line.className = `log-line ${type}`;
+      const now = new Date();
+      const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+      line.innerHTML = `<span class="log-time">${ts}</span>${msg}`;
+      area.appendChild(line);
+      area.scrollTop = area.scrollHeight;
+    }
+
     // ── Main Flow: HTTP upload → WebSocket process ──
     async function startTranscription() {
       if (!selectedFile || !getKeys().length) return;
@@ -281,15 +304,20 @@
       btn.disabled = true; btn.textContent = '⏳ Uploading...';
       setBadge('work', 'UPLOADING');
       G('progressArea').style.display = ''; G('workersArea').innerHTML = '';
+      G('logArea').innerHTML = ''; G('logArea').style.display = '';
       srtEntries = []; srtContent = ''; streamIdx = 0;
       G('subList').innerHTML = ''; G('emptyState').style.display = 'none';
       G('subtitleArea').style.display = 'flex'; G('editorInfo').textContent = '⏳ Uploading...';
 
-      // Step 1: HTTP upload with progress
+      addLog(`📁 File: ${selectedFile.name} (${formatSize(selectedFile.size)})`, 'info');
+      addLog(`🔑 Keys: ${getKeys().length} | Luồng: ${G('threadsSlider').value}`, 'info');
+      addLog(`📤 Bắt đầu upload...`, 'accent');
+
       setProgress(0, '📤 Uploading file...');
       try {
         const formData = new FormData();
         formData.append('file', selectedFile);
+        const t0 = Date.now();
 
         const uploadResult = await new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
@@ -308,10 +336,13 @@
           xhr.send(formData);
         });
 
-        setProgress(30, `✅ Upload xong! (${uploadResult.size_mb} MB)`);
+        const uploadMs = Date.now() - t0;
+        addLog(`✅ Upload xong (${uploadResult.size_mb}MB) — ${(uploadMs/1000).toFixed(1)}s`, 'ok');
+        setProgress(30, `✅ Upload xong!`);
         btn.textContent = '⏳ Đang tách...';
         setBadge('work', 'ĐANG TÁCH...');
-        G('editorInfo').textContent = '⏳ Đang tách...';
+        G('editorInfo').textContent = '⏳ Kết nối server...';
+        addLog(`🔌 Kết nối WebSocket...`, 'accent');
 
         // Step 2: WebSocket for processing
         const loc = window.location;
@@ -319,6 +350,7 @@
         ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
+          addLog(`🟢 WebSocket connected — gửi config...`, 'ok');
           ws.send(JSON.stringify({
             file_path: uploadResult.file_path,
             file_name: selectedFile.name,
@@ -332,15 +364,29 @@
 
         ws.onmessage = (e) => {
           const data = JSON.parse(e.data);
-          if (data.type === 'progress') setProgress(30 + (data.percent || 0) * 0.7, data.message);
-          else if (data.type === 'worker') updateWorker(data);
-          else if (data.type === 'partial') handlePartial(data);
-          else if (data.type === 'result') handleResult(data);
-          else if (data.type === 'error') { setStatus('❌ ' + data.message); setBadge('err', 'LỖI'); btn.disabled = false; btn.textContent = '🚀 Bắt đầu tách phụ đề'; }
+          if (data.type === 'progress') {
+            setProgress(30 + (data.percent || 0) * 0.7, data.message);
+            addLog(data.message, data.message?.includes('✅') ? 'ok' : 'accent');
+          } else if (data.type === 'worker') {
+            updateWorker(data);
+            const lt = data.status === 'done' ? 'ok' : data.status === 'error' ? 'err' : 'info';
+            addLog(`[${data.provider}#${data.worker_id}] ${data.message}`, lt);
+          } else if (data.type === 'partial') {
+            handlePartial(data);
+            addLog(`📝 +${(data.entries||[]).length} segments từ ${data.source}`, 'ok');
+          } else if (data.type === 'result') {
+            handleResult(data);
+            addLog(`🎉 Hoàn tất: ${data.total_segments} phụ đề — ${data.language}`, 'ok');
+          } else if (data.type === 'error') {
+            addLog(`❌ ${data.message}`, 'err');
+            setStatus('❌ ' + data.message); setBadge('err', 'LỖI');
+            btn.disabled = false; btn.textContent = '🚀 Bắt đầu tách phụ đề';
+          }
         };
-        ws.onerror = () => { setStatus('❌ WebSocket error'); setBadge('err', 'LỖI'); btn.disabled = false; btn.textContent = '🚀 Bắt đầu tách phụ đề'; };
+        ws.onerror = () => { addLog('❌ WebSocket error', 'err'); setStatus('❌ WebSocket error'); setBadge('err', 'LỖI'); btn.disabled = false; btn.textContent = '🚀 Bắt đầu tách phụ đề'; };
         ws.onclose = () => { ws = null; };
       } catch (err) {
+        addLog(`❌ ${err.message}`, 'err');
         setStatus('❌ ' + err.message); setBadge('err', 'LỖI');
         btn.disabled = false; btn.textContent = '🚀 Bắt đầu tách phụ đề';
       }
