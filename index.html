@@ -27,6 +27,8 @@
       --red-bg: rgba(239, 68, 68, .1);
       --yellow: #eab308;
       --yellow-bg: rgba(234, 179, 8, .1);
+      --orange: #f97316;
+      --orange-bg: rgba(249, 115, 22, .1);
       --r: 12px;
       --rs: 8px;
       --font: 'Inter', system-ui, sans-serif;
@@ -59,9 +61,7 @@
     }
     .logo-sub { font-size: 11px; color: var(--text3); margin-left: 4px; }
     .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-    .badge {
-      font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: 700;
-    }
+    .badge { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
     .badge-idle { background: var(--bg3); color: var(--text3); }
     .badge-work { background: var(--glow); color: var(--accent2); animation: pulse 2s infinite; }
     .badge-done { background: var(--green-bg); color: var(--green); }
@@ -73,7 +73,7 @@
 
     /* ── Sidebar ── */
     .sidebar {
-      width: 360px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border);
+      width: 380px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border);
       overflow-y: auto; display: flex; flex-direction: column;
     }
     .section { padding: 16px; border-bottom: 1px solid var(--border); }
@@ -89,6 +89,7 @@
 
     .label { font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 5px; display: block; margin-top: 10px; }
     .label:first-child { margin-top: 0; }
+    .label-hint { font-weight: 400; color: var(--text3); }
 
     /* ── Dropzone ── */
     .dropzone {
@@ -110,6 +111,26 @@
     .file-info-size { font-size: 10px; color: var(--text3); }
     .file-info-rm { background: none; color: var(--text3); padding: 2px 6px; border-radius: 4px; font-size: 14px; }
     .file-info-rm:hover { color: var(--red); }
+
+    /* ── Keys textarea ── */
+    .keys-textarea {
+      font-family: 'Consolas', monospace; font-size: 11px; line-height: 1.6;
+      min-height: 65px; resize: vertical; padding: 8px 10px;
+    }
+    .key-count {
+      display: flex; gap: 8px; margin-top: 6px; font-size: 10px; font-weight: 700;
+    }
+    .key-count-gem { color: var(--accent2); background: var(--glow); padding: 2px 8px; border-radius: 10px; }
+    .key-count-groq { color: var(--orange); background: var(--orange-bg); padding: 2px 8px; border-radius: 10px; }
+
+    /* ── Model selects row ── */
+    .model-row { display: flex; gap: 8px; margin-top: 6px; }
+    .model-row select { flex: 1; font-size: 11px; padding: 6px 8px; }
+
+    /* ── Duration ── */
+    .duration-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+    .duration-input { width: 80px; text-align: center; font-size: 12px; font-weight: 700; }
+    .duration-label { font-size: 11px; color: var(--text3); }
 
     /* ── Buttons ── */
     .btn {
@@ -137,7 +158,29 @@
       border-radius: 3px; transition: width .4s ease; width: 0%;
     }
     .progress-text { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); font-weight: 600; }
-    .progress-status { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+    /* ── Worker Status ── */
+    .workers-area { margin-top: 10px; }
+    .worker-row {
+      display: flex; align-items: center; gap: 8px; padding: 5px 8px; margin: 3px 0;
+      border-radius: 6px; font-size: 11px; font-weight: 600; transition: all .2s;
+    }
+    .worker-row.running { background: var(--glow); color: var(--accent2); }
+    .worker-row.done { background: var(--green-bg); color: var(--green); }
+    .worker-row.error { background: var(--red-bg); color: var(--red); }
+    .worker-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: background .2s;
+    }
+    .worker-row.running .worker-dot { background: var(--accent); animation: pulse 1s infinite; }
+    .worker-row.done .worker-dot { background: var(--green); }
+    .worker-row.error .worker-dot { background: var(--red); }
+    .worker-tag {
+      font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px;
+      text-transform: uppercase; flex-shrink: 0;
+    }
+    .worker-tag.gemini { background: var(--glow); color: var(--accent2); }
+    .worker-tag.groq { background: var(--orange-bg); color: var(--orange); }
+    .worker-msg { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     /* ── Editor Panel ── */
     .editor { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -172,12 +215,8 @@
     .col-text { flex: 1; }
 
     .sub-list { flex: 1; overflow-y: auto; }
-
-    .sub-row {
-      display: flex; border-bottom: 1px solid var(--border); transition: background .1s;
-    }
+    .sub-row { display: flex; border-bottom: 1px solid var(--border); transition: background .1s; }
     .sub-row:hover { background: var(--bg3); }
-
     .sub-cell { padding: 10px 14px; font-size: 13px; line-height: 1.6; }
     .sub-cell.col-idx {
       width: 50px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text3);
@@ -188,7 +227,6 @@
       font-size: 11px; color: var(--accent2); display: flex; align-items: center;
     }
     .sub-cell.col-text { flex: 1; }
-
     .sub-textarea {
       background: transparent; border: none; color: var(--text); font-size: 13px; line-height: 1.6;
       width: 100%; resize: none; font-family: var(--font); padding: 0;
@@ -211,27 +249,15 @@
       font-size: 11px; color: var(--text3);
     }
 
-    /* ── Animation ── */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in { animation: fadeIn .3s ease; }
-
-    @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-    .shimmer {
-      background: linear-gradient(90deg, var(--bg3) 25%, var(--border) 50%, var(--bg3) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-    }
   </style>
 </head>
 <body>
   <div class="app">
-    <!-- Header -->
     <div class="header">
       <div class="logo">🎧 SubExtractor</div>
-      <span class="logo-sub">AI Subtitle Generator</span>
+      <span class="logo-sub">AI Subtitle Generator — Multi-Key Parallel</span>
       <div class="header-right">
         <span id="langBadge" style="display:none; font-size:11px; padding:3px 10px; border-radius:20px; background:var(--glow); color:var(--accent2); font-weight:700;"></span>
         <span id="badge" class="badge badge-idle">SẴN SÀNG</span>
@@ -239,7 +265,6 @@
     </div>
 
     <div class="main">
-      <!-- Sidebar -->
       <div class="sidebar">
         <!-- Step 1: Upload -->
         <div class="section">
@@ -261,22 +286,41 @@
               <button class="file-info-rm" onclick="clearFile()">✕</button>
             </div>
           </div>
+          <label class="label" style="margin-top:10px;">⏱️ Thời lượng (giây) <span class="label-hint">— giúp chia luồng chính xác</span></label>
+          <div class="duration-row">
+            <input class="duration-input" type="number" id="durationInput" placeholder="auto" min="0" step="1">
+            <span class="duration-label">giây (để trống = tự ước lượng)</span>
+          </div>
         </div>
 
-        <!-- Step 2: API Key -->
+        <!-- Step 2: API Keys -->
         <div class="section">
           <div class="section-title">
             <div class="section-num" id="stepNum2">2</div>
-            CẤU HÌNH
+            API KEYS — NHIỀU KEY = NHIỀU LUỒNG
           </div>
-          <label class="label">🔑 Gemini API Key</label>
-          <input type="password" id="apiKey" placeholder="Dán API key từ aistudio.google.com">
-          <label class="label">🤖 Model</label>
-          <select id="modelSelect">
-            <option value="gemini-2.5-flash">⚡ Gemini 2.5 Flash (nhanh)</option>
-            <option value="gemini-2.5-pro">🧠 Gemini 2.5 Pro (chính xác)</option>
-            <option value="gemini-2.0-flash">⚡ Gemini 2.0 Flash</option>
-          </select>
+          <label class="label">🔑 Dán API keys <span class="label-hint">— mỗi dòng 1 key, tự nhận dạng Gemini/Groq</span></label>
+          <textarea class="keys-textarea" id="apiKeys" rows="4"
+            placeholder="AIzaSy... (Gemini key)&#10;gsk_abc... (Groq key)&#10;AIzaSy... (thêm Gemini key)&#10;&#10;Tự nhận dạng: AIza = Gemini, gsk_ = Groq"></textarea>
+          <div class="key-count" id="keyCount"></div>
+
+          <div class="model-row">
+            <div style="flex:1;">
+              <label class="label">🤖 Gemini Model</label>
+              <select id="geminiModel">
+                <option value="gemini-2.5-flash">⚡ 2.5 Flash</option>
+                <option value="gemini-2.5-pro">🧠 2.5 Pro</option>
+                <option value="gemini-2.0-flash">⚡ 2.0 Flash</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <label class="label">🎤 Groq Model</label>
+              <select id="groqModel">
+                <option value="whisper-large-v3-turbo">⚡ Whisper Turbo</option>
+                <option value="whisper-large-v3">🧠 Whisper v3</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <!-- Step 3: Action -->
@@ -286,7 +330,7 @@
             TÁCH PHỤ ĐỀ
           </div>
           <button class="btn btn-primary" id="btnStart" onclick="startTranscription()" disabled>
-            🎯 Bắt đầu tách phụ đề
+            🚀 Bắt đầu tách phụ đề song song
           </button>
           <div class="progress-area" id="progressArea">
             <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -294,7 +338,7 @@
               <span id="progressLabel">Đang xử lý...</span>
               <span id="progressPercent">0%</span>
             </div>
-            <div class="progress-status" id="progressStatus"></div>
+            <div class="workers-area" id="workersArea"></div>
           </div>
         </div>
 
@@ -304,12 +348,8 @@
             <div class="section-num done">✓</div>
             TẢI VỀ
           </div>
-          <button class="btn btn-success" onclick="downloadSRT()">
-            💾 Tải file SRT
-          </button>
-          <button class="btn btn-secondary" style="margin-top:6px;" onclick="copySRT()">
-            📋 Copy nội dung SRT
-          </button>
+          <button class="btn btn-success" onclick="downloadSRT()">💾 Tải file SRT</button>
+          <button class="btn btn-secondary" style="margin-top:6px;" onclick="copySRT()">📋 Copy nội dung SRT</button>
         </div>
       </div>
 
@@ -319,20 +359,15 @@
           <span class="editor-title">📝 Phụ đề</span>
           <span class="editor-info" id="editorInfo"></span>
         </div>
-
-        <!-- Empty state -->
         <div class="empty-state" id="emptyState">
           <div class="empty-icon">🎧</div>
           <div class="empty-text">Chưa có phụ đề</div>
-          <div class="empty-sub">Upload file audio/video và nhấn "Tách phụ đề" để bắt đầu</div>
+          <div class="empty-sub">Upload file → dán API keys → nhấn "Tách phụ đề" để bắt đầu</div>
         </div>
-
-        <!-- Subtitle table (hidden until results) -->
-        <div id="subtitleArea" style="display:none; flex:1; display:none; flex-direction:column; overflow:hidden;">
+        <div id="subtitleArea" style="display:none; flex-direction:column; overflow:hidden;">
           <div class="editor-toolbar">
             <button class="toolbar-btn" onclick="downloadSRT()">💾 Tải SRT</button>
             <button class="toolbar-btn" onclick="copySRT()">📋 Copy</button>
-            <button class="toolbar-btn" onclick="selectAll()">☑️ Chọn tất cả</button>
           </div>
           <div class="sub-header">
             <div class="sub-header-col col-idx">#</div>
@@ -344,27 +379,23 @@
       </div>
     </div>
 
-    <!-- Status bar -->
     <div class="statusbar">
       <span id="statusText">Sẵn sàng</span>
     </div>
   </div>
 
   <script>
-    // ── State ──
     let selectedFile = null;
     let srtContent = '';
     let srtEntries = [];
     let srtFileName = 'output.srt';
     let ws = null;
 
-    // ── DOM helpers ──
     const G = id => document.getElementById(id);
 
     // ── File handling ──
     const dropzone = G('dropzone');
     const fileInput = G('fileInput');
-
     dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('active'); });
     dropzone.addEventListener('dragleave', () => dropzone.classList.remove('active'));
     dropzone.addEventListener('drop', e => {
@@ -377,7 +408,7 @@
       const ext = file.name.split('.').pop().toLowerCase();
       const allowed = ['mp3','wav','aac','ogg','flac','aiff','m4a','mp4','mkv','webm','mov'];
       if (!allowed.includes(ext)) {
-        setStatus('❌ File không hỗ trợ. Dùng MP3, WAV, AAC, OGG, FLAC, MP4, MKV...', 'err');
+        setStatus('❌ File không hỗ trợ');
         return;
       }
       selectedFile = file;
@@ -388,7 +419,7 @@
       G('stepNum1').classList.add('done');
       G('stepNum1').textContent = '✓';
       updateStartBtn();
-      setStatus(`📁 Đã chọn: ${file.name}`);
+      setStatus(`📁 ${file.name}`);
     }
 
     function clearFile() {
@@ -399,7 +430,6 @@
       G('stepNum1').textContent = '1';
       fileInput.value = '';
       updateStartBtn();
-      setStatus('Sẵn sàng');
     }
 
     function formatSize(bytes) {
@@ -408,40 +438,63 @@
       return (bytes / 1048576).toFixed(1) + ' MB';
     }
 
-    // ── API Key ──
-    G('apiKey').addEventListener('input', () => {
+    // ── API Keys ──
+    const keysEl = G('apiKeys');
+    keysEl.addEventListener('input', () => {
+      updateKeyCount();
       updateStartBtn();
-      // Save to localStorage
-      localStorage.setItem('subex_api_key', G('apiKey').value);
+      localStorage.setItem('subex_keys', keysEl.value);
     });
 
-    // Load saved key
-    const savedKey = localStorage.getItem('subex_api_key');
-    if (savedKey) G('apiKey').value = savedKey;
+    const savedKeys = localStorage.getItem('subex_keys');
+    if (savedKeys) keysEl.value = savedKeys;
+
+    function getKeys() {
+      return keysEl.value.split('\n').map(k => k.trim()).filter(k => k && !k.startsWith('//'));
+    }
+
+    function updateKeyCount() {
+      const keys = getKeys();
+      let gem = 0, groq = 0;
+      keys.forEach(k => {
+        if (k.startsWith('gsk_') || k.toLowerCase().startsWith('groq:')) groq++;
+        else gem++;
+      });
+      const el = G('keyCount');
+      if (keys.length === 0) {
+        el.innerHTML = '';
+      } else {
+        el.innerHTML = `
+          ${gem > 0 ? `<span class="key-count-gem">🟣 ${gem} Gemini</span>` : ''}
+          ${groq > 0 ? `<span class="key-count-groq">🟠 ${groq} Groq</span>` : ''}
+          <span style="color:var(--text3);">${keys.length} workers</span>
+        `;
+      }
+    }
+    updateKeyCount();
 
     function updateStartBtn() {
-      G('btnStart').disabled = !(selectedFile && G('apiKey').value.trim());
+      G('btnStart').disabled = !(selectedFile && getKeys().length > 0);
     }
     updateStartBtn();
 
     // ── Transcription ──
     async function startTranscription() {
-      if (!selectedFile || !G('apiKey').value.trim()) return;
+      if (!selectedFile || getKeys().length === 0) return;
 
       const btn = G('btnStart');
       btn.disabled = true;
       btn.textContent = '⏳ Đang xử lý...';
-      setBadge('work', 'ĐANG TÁ​CH...');
+      setBadge('work', 'ĐANG TÁCH...');
       G('progressArea').style.display = '';
+      G('workersArea').innerHTML = '';
       setProgress(0, 'Đang đọc file...');
 
-      // Read file as base64
       const reader = new FileReader();
       reader.onload = async function(e) {
         const base64 = e.target.result.split(',')[1];
         setProgress(5, 'Đang kết nối...');
 
-        // Connect WebSocket
         const loc = window.location;
         const wsProto = loc.protocol === 'https:' ? 'wss://' : 'ws://';
         const wsHost = loc.host || 'localhost:8000';
@@ -451,52 +504,72 @@
           ws = new WebSocket(wsUrl);
 
           ws.onopen = () => {
-            // Send config
+            const duration = parseInt(G('durationInput').value) || 0;
             ws.send(JSON.stringify({
               file_data: base64,
               file_name: selectedFile.name,
-              api_key: G('apiKey').value.trim(),
-              model_name: G('modelSelect').value,
+              api_keys: getKeys(),
+              model_name: G('geminiModel').value,
+              groq_model: G('groqModel').value,
+              duration_hint: duration,
             }));
-            setProgress(8, 'File đã gửi, đang upload lên Gemini...');
+            setProgress(8, 'File đã gửi...');
           };
 
           ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
 
             if (data.type === 'progress') {
-              setProgress(data.percent || 0, data.message || 'Đang xử lý...');
+              setProgress(data.percent || 0, data.message || '');
+            } else if (data.type === 'worker') {
+              updateWorker(data);
             } else if (data.type === 'result') {
               handleResult(data);
             } else if (data.type === 'error') {
-              setStatus('❌ ' + data.message, 'err');
+              setStatus('❌ ' + data.message);
               setBadge('err', 'LỖI');
               btn.disabled = false;
-              btn.textContent = '🎯 Bắt đầu tách phụ đề';
-              G('progressArea').style.display = 'none';
+              btn.textContent = '🚀 Bắt đầu tách phụ đề song song';
             }
           };
 
           ws.onerror = () => {
-            setStatus('❌ Không thể kết nối server', 'err');
+            setStatus('❌ Không thể kết nối server');
             setBadge('err', 'LỖI');
             btn.disabled = false;
-            btn.textContent = '🎯 Bắt đầu tách phụ đề';
+            btn.textContent = '🚀 Bắt đầu tách phụ đề song song';
             G('progressArea').style.display = 'none';
           };
 
-          ws.onclose = () => {
-            ws = null;
-          };
-
+          ws.onclose = () => { ws = null; };
         } catch (err) {
-          setStatus('❌ Lỗi: ' + err.message, 'err');
+          setStatus('❌ ' + err.message);
           btn.disabled = false;
-          btn.textContent = '🎯 Bắt đầu tách phụ đề';
+          btn.textContent = '🚀 Bắt đầu tách phụ đề song song';
           G('progressArea').style.display = 'none';
         }
       };
       reader.readAsDataURL(selectedFile);
+    }
+
+    function updateWorker(data) {
+      const area = G('workersArea');
+      let rowId = `worker-${data.provider}-${data.worker_id}`;
+      let row = document.getElementById(rowId);
+      if (!row) {
+        row = document.createElement('div');
+        row.id = rowId;
+        row.className = 'worker-row fade-in';
+        area.appendChild(row);
+      }
+      row.className = `worker-row ${data.status}`;
+      const tagClass = data.provider === 'groq' ? 'groq' : 'gemini';
+      const icon = data.status === 'done' ? '✅' : data.status === 'error' ? '❌' : '⏳';
+      row.innerHTML = `
+        <div class="worker-dot"></div>
+        <span class="worker-tag ${tagClass}">${data.provider}</span>
+        <span class="worker-msg">${icon} ${data.message || ''}</span>
+      `;
     }
 
     function handleResult(data) {
@@ -505,30 +578,25 @@
       srtFileName = data.file_name;
       const language = data.language;
       const total = data.total_segments;
+      const workers = data.workers_used || 1;
 
-      // Show language badge
       G('langBadge').textContent = '🌐 ' + language;
       G('langBadge').style.display = '';
 
-      // Update UI
       setBadge('done', 'HOÀN TẤT');
-      setProgress(100, `✅ ${total} phụ đề — ${language}`);
-      setStatus(`✅ Tách thành công ${total} phụ đề — Ngôn ngữ: ${language}`);
-      G('editorInfo').textContent = `${total} segments • ${language}`;
+      setProgress(100, `✅ ${total} phụ đề — ${language} — ${workers} workers`);
+      setStatus(`✅ ${total} phụ đề — ${language}`);
+      G('editorInfo').textContent = `${total} segments • ${language} • ${workers} workers`;
 
-      // Show download section
       G('downloadSection').style.display = '';
       G('stepNum3').classList.add('done');
       G('stepNum3').textContent = '✓';
 
-      // Render subtitle table
       renderSubtitles(srtEntries);
 
-      // Reset button
       const btn = G('btnStart');
       btn.disabled = false;
-      btn.textContent = '🎯 Bắt đầu tách phụ đề';
-
+      btn.textContent = '🚀 Bắt đầu tách phụ đề song song';
       document.title = `✅ ${total} sub — SubExtractor`;
     }
 
@@ -536,18 +604,15 @@
       G('emptyState').style.display = 'none';
       const area = G('subtitleArea');
       area.style.display = 'flex';
-
       const list = G('subList');
       list.innerHTML = '';
 
       entries.forEach((entry, i) => {
         const row = document.createElement('div');
         row.className = 'sub-row fade-in';
-        row.style.animationDelay = Math.min(i * 20, 500) + 'ms';
-
+        row.style.animationDelay = Math.min(i * 15, 500) + 'ms';
         const start = entry.start || '00:00:00,000';
         const end = entry.end || '00:00:00,000';
-
         row.innerHTML = `
           <div class="sub-cell col-idx">${entry.index || i + 1}</div>
           <div class="sub-cell col-time">${start} → ${end}</div>
@@ -557,8 +622,6 @@
           </div>
         `;
         list.appendChild(row);
-
-        // Auto-resize textarea
         setTimeout(() => {
           const ta = row.querySelector('.sub-textarea');
           if (ta) autoResize(ta);
@@ -566,16 +629,10 @@
       });
     }
 
-    function autoResize(el) {
-      el.style.height = 'auto';
-      el.style.height = el.scrollHeight + 'px';
-    }
+    function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
 
     function updateEntry(idx, text) {
-      if (srtEntries[idx]) {
-        srtEntries[idx].text = text;
-        regenerateSRT();
-      }
+      if (srtEntries[idx]) { srtEntries[idx].text = text; regenerateSRT(); }
     }
 
     function regenerateSRT() {
@@ -585,42 +642,27 @@
         const start = entry.start || '00:00:00,000';
         const end = entry.end || '00:00:00,000';
         const text = (entry.text || '').trim();
-        if (text) {
-          lines.push(idx);
-          lines.push(start + ' --> ' + end);
-          lines.push(text);
-          lines.push('');
-        }
+        if (text) { lines.push(idx); lines.push(start + ' --> ' + end); lines.push(text); lines.push(''); }
       });
       srtContent = lines.join('\n');
     }
 
-    // ── Download / Copy ──
     function downloadSRT() {
       if (!srtContent) return;
       const blob = new Blob([srtContent], { type: 'text/plain; charset=utf-8' });
-      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
+      a.href = URL.createObjectURL(blob);
       a.download = srtFileName;
       a.click();
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(a.href);
       setStatus('💾 Đã tải ' + srtFileName);
     }
 
     function copySRT() {
       if (!srtContent) return;
-      navigator.clipboard.writeText(srtContent).then(() => {
-        setStatus('📋 Đã copy nội dung SRT');
-      });
+      navigator.clipboard.writeText(srtContent).then(() => setStatus('📋 Đã copy'));
     }
 
-    function selectAll() {
-      const textareas = document.querySelectorAll('.sub-textarea');
-      textareas.forEach(ta => ta.select());
-    }
-
-    // ── UI Helpers ──
     function setBadge(type, text) {
       const el = G('badge');
       el.className = 'badge badge-' + (type === 'work' ? 'work' : type === 'done' ? 'done' : type === 'err' ? 'err' : 'idle');
@@ -633,12 +675,10 @@
       if (message) G('progressLabel').textContent = message;
     }
 
-    function setStatus(text, type) {
+    function setStatus(text) {
       G('statusText').textContent = text;
-      document.title = text.replace(/[❌✅💾📋📁⏳🎯]/g, '').trim() + ' — SubExtractor';
     }
 
-    // ── Init ──
     updateStartBtn();
   </script>
 </body>
