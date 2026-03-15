@@ -321,6 +321,13 @@
               </select>
             </div>
           </div>
+
+          <label class="label">🚀 Luồng/key Gemini <span class="label-hint">— nhiều luồng = nhanh hơn</span></label>
+          <div class="duration-row">
+            <input type="range" id="threadsSlider" min="1" max="20" value="5" style="flex:1; accent-color:var(--accent);" oninput="updateThreadsDisplay()">
+            <span id="threadsValue" style="min-width:35px; text-align:center; font-weight:800; color:var(--accent2); font-size:14px;">5</span>
+          </div>
+          <div id="totalWorkers" style="font-size:10px; color:var(--text3); margin-top:3px;"></div>
         </div>
 
         <!-- Step 3: Action -->
@@ -463,15 +470,24 @@
       const el = G('keyCount');
       if (keys.length === 0) {
         el.innerHTML = '';
+        G('totalWorkers').textContent = '';
       } else {
+        const tpk = parseInt(G('threadsSlider').value) || 5;
+        const totalW = gem * tpk + groq;
         el.innerHTML = `
-          ${gem > 0 ? `<span class="key-count-gem">🟣 ${gem} Gemini</span>` : ''}
+          ${gem > 0 ? `<span class="key-count-gem">🟣 ${gem} Gemini ×${tpk}</span>` : ''}
           ${groq > 0 ? `<span class="key-count-groq">🟠 ${groq} Groq</span>` : ''}
-          <span style="color:var(--text3);">${keys.length} workers</span>
         `;
+        G('totalWorkers').textContent = `Tổng: ${totalW} workers song song`;
       }
     }
     updateKeyCount();
+
+    function updateThreadsDisplay() {
+      const v = G('threadsSlider').value;
+      G('threadsValue').textContent = v;
+      updateKeyCount();
+    }
 
     function updateStartBtn() {
       G('btnStart').disabled = !(selectedFile && getKeys().length > 0);
@@ -521,6 +537,7 @@
               model_name: G('geminiModel').value,
               groq_model: G('groqModel').value,
               duration_hint: duration,
+              threads_per_key: parseInt(G('threadsSlider').value) || 5,
             }));
             setProgress(8, 'File đã gửi...');
           };
