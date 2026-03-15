@@ -300,6 +300,7 @@ async def websocket_transcribe(ws: WebSocket):
     await ws.accept()
     session_id = f"ws_{int(time.time() * 1000)}"
     temp_path = None
+    logger.info(f"[WS] Session {session_id}: connected")
 
     try:
         raw = await ws.receive_text()
@@ -572,4 +573,8 @@ if __name__ == "__main__":
     import uvicorn
     print("SubExtractor server at http://localhost:8000")
     print("  WebSocket: ws://localhost:8000/ws/transcribe")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        app, host="0.0.0.0", port=8000,
+        ws_max_size=500 * 1024 * 1024,  # 500 MB
+        timeout_keep_alive=300,
+    )
