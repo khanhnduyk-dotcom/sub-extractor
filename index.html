@@ -236,6 +236,22 @@
       dropzone.style.display = 'none';
       G('stepNum1').classList.add('done'); G('stepNum1').textContent = '✓';
       updateStartBtn();
+
+      // Auto-detect duration
+      const isVideo = ['mp4','mkv','webm','mov'].includes(ext);
+      const media = document.createElement(isVideo ? 'video' : 'audio');
+      media.preload = 'metadata';
+      const url = URL.createObjectURL(file);
+      media.src = url;
+      media.onloadedmetadata = () => {
+        const dur = Math.round(media.duration);
+        if (dur > 0 && isFinite(dur)) {
+          G('durationInput').value = dur;
+          const mm = Math.floor(dur / 60), ss = dur % 60;
+          setStatus(`📁 ${file.name} — ${mm}:${String(ss).padStart(2,'0')} (${formatSize(file.size)})`);
+        }
+        URL.revokeObjectURL(url);
+      };
     }
 
     function clearFile() { selectedFile = null; G('fileInfoArea').style.display = 'none'; dropzone.style.display = ''; G('stepNum1').classList.remove('done'); G('stepNum1').textContent = '1'; fileInput.value = ''; updateStartBtn(); }

@@ -392,7 +392,7 @@ async def websocket_transcribe(ws: WebSocket):
             # Split into chunks — ALL workers use same client (same key)
             # For billing accounts, single key handles 2000 RPM easily
             n_total = threads_per_key
-            est_duration = duration_hint if duration_hint > 0 else max(60, file_size_mb * 60)
+            est_duration = duration_hint if duration_hint > 0 else max(60, file_size_mb * 8)
             chunk_secs = est_duration / n_total
 
             time_ranges = []
