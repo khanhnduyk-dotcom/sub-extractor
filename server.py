@@ -394,95 +394,117 @@ async def websocket_transcribe(ws: WebSocket):
         # ─── GEMINI WORKERS ───
         if gemini_keys and not all_entries:
             # Only use Gemini if Groq didn't produce results
+            loop = asyncio.get_event_loop()
+
+            # Upload file for EACH unique key (Files API is per-key)
             await ws.send_json({
                 "type": "progress", "step": "gemini_upload",
-                "message": f"☁️ Uploading lên Gemini File API...", "percent": 20
+                "message": f"☁️ Uploading cho {len(gemini_keys)} Gemini keys...", "percent": 15
             })
 
-            # Upload file once with first key
-            loop = asyncio.get_event_loop()
-            first_client = genai.Client(api_key=gemini_keys[0]["key"])
-            uploaded_file = await loop.run_in_executor(
-                None, lambda: first_client.files.upload(file=temp_path)
-            )
+            key_clients = {}  # key -> (client, uploaded_file)
+            for ki, kinfo in enumerate(gemini_keys):
+                try:
+                    client = genai.Client(api_key=kinfo["key"])
+                    await ws.send_json({
+                        "type": "worker", "provider": "gemini", "worker_id": f"upload-{ki+1}",
+                        "status": "running", "message": f"Upload key #{ki+1}..."
+                    })
+                    uf = await loop.run_in_executor(
+                        None, lambda c=client: c.files.upload(file=temp_path)
+                    )
+                    # Wait for ACTIVE
+                    for _ in range(60):
+                        fi = await loop.run_in_executor(
+                            None, lambda c=client, n=uf.name: c.files.get(name=n)
+                        )
+                        if fi.state.name == "ACTIVE":
+                            break
+                        await asyncio.sleep(3)
+                    key_clients[ki] = (client, uf)
+                    await ws.send_json({
+                        "type": "worker", "provider": "gemini", "worker_id": f"upload-{ki+1}",
+                        "status": "done", "message": f"Upload key #{ki+1} ✅"
+                    })
+                except Exception as e:
+                    logger.error(f"Upload failed for key #{ki+1}: {e}")
+                    await ws.send_json({
+                        "type": "worker", "provider": "gemini", "worker_id": f"upload-{ki+1}",
+                        "status": "error", "message": f"Upload key #{ki+1}: {str(e)[:80]}"
+                    })
 
-            # Wait for processing
-            for _ in range(60):
-                file_info = await loop.run_in_executor(
-                    None, lambda: first_client.files.get(name=uploaded_file.name)
-                )
-                if file_info.state.name == "ACTIVE":
-                    break
-                await asyncio.sleep(5)
+            if not key_clients:
+                await ws.send_json({"type": "error", "message": "Không upload được file lên Gemini"})
+                return
 
-            # Calculate total chunks = keys × threads_per_key
-            n_total = len(gemini_keys) * threads_per_key
+            # Calculate total chunks
+            n_keys_ok = len(key_clients)
+            n_total = n_keys_ok * threads_per_key
             est_duration = duration_hint if duration_hint > 0 else max(60, file_size_mb * 60)
             chunk_secs = est_duration / n_total
 
             time_ranges = []
             for i in range(n_total):
                 start = i * chunk_secs
-                end = min((i + 1) * chunk_secs + 3, est_duration + 30)  # 3s overlap
+                end = min((i + 1) * chunk_secs + 3, est_duration + 30)
                 time_ranges.append((seconds_to_mmss(start), seconds_to_mmss(end)))
 
             await ws.send_json({
                 "type": "progress", "step": "gemini_parallel",
-                "message": f"🚀 {n_total} workers ({len(gemini_keys)} keys × {threads_per_key} threads) — est. {int(est_duration)}s audio",
+                "message": f"🚀 {n_total} workers ({n_keys_ok} keys × {threads_per_key} threads) — est. {int(est_duration)}s",
                 "percent": 40
             })
 
-            # Worker function — each uses its assigned key
-            async def worker(idx, key_info, start_mm, end_mm):
+            # Worker function — uses its assigned key's client + uploaded file
+            key_list = list(key_clients.keys())
+
+            async def worker(idx, start_mm, end_mm):
+                assigned_key_idx = key_list[idx % n_keys_ok]
+                client, uf = key_clients[assigned_key_idx]
                 try:
-                    client = genai.Client(api_key=key_info["key"])
                     await ws.send_json({
                         "type": "worker", "provider": "gemini", "worker_id": idx + 1,
                         "status": "running",
-                        "message": f"G#{idx+1}: {start_mm}→{end_mm}"
+                        "message": f"G#{idx+1} [K{assigned_key_idx+1}]: {start_mm}→{end_mm}"
                     })
                     entries = await gemini_transcribe_chunk(
-                        client, uploaded_file, model_name, start_mm, end_mm
+                        client, uf, model_name, start_mm, end_mm
                     )
                     await ws.send_json({
                         "type": "worker", "provider": "gemini", "worker_id": idx + 1,
                         "status": "done",
                         "message": f"G#{idx+1}: {len(entries)} seg ✅"
                     })
-                    # Stream partial results immediately
                     await ws.send_json({
-                        "type": "partial",
-                        "entries": entries,
+                        "type": "partial", "entries": entries,
                         "source": f"gemini-{idx+1}"
                     })
                     return entries
                 except Exception as e:
                     err = str(e)[:100]
                     errors.append(f"G#{idx+1}: {err}")
+                    logger.error(f"Worker G#{idx+1} error: {e}")
                     await ws.send_json({
                         "type": "worker", "provider": "gemini", "worker_id": idx + 1,
                         "status": "error", "message": f"G#{idx+1}: {err}"
                     })
                     return []
 
-            # Assign chunks to keys round-robin
-            tasks = []
-            for i, tr in enumerate(time_ranges):
-                key_idx = i % len(gemini_keys)  # round-robin
-                tasks.append(worker(i, gemini_keys[key_idx], tr[0], tr[1]))
-
+            # Run all workers in parallel
+            tasks = [worker(i, tr[0], tr[1]) for i, tr in enumerate(time_ranges)]
             results = await asyncio.gather(*tasks)
 
             for chunk_entries in results:
                 all_entries.extend(chunk_entries)
 
-            # Cleanup uploaded file
-            try:
-                await loop.run_in_executor(
-                    None, lambda: first_client.files.delete(name=uploaded_file.name)
-                )
-            except:
-                pass
+            # Cleanup uploaded files
+            for ki, (client, uf) in key_clients.items():
+                try:
+                    await loop.run_in_executor(
+                        None, lambda c=client, n=uf.name: c.files.delete(name=n)
+                    )
+                except:
+                    pass
 
         elif gemini_keys and all_entries:
             # Groq already produced results, skip Gemini
