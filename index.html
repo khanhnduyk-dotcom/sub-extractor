@@ -28,9 +28,9 @@
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
     .app { display: flex; flex-direction: column; height: 100vh; }
-    .header { display: flex; align-items: center; gap: 12px; padding: 12px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .header { display: flex; align-items: center; gap: 12px; padding: 10px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .logo { font-size: 18px; font-weight: 900; background: linear-gradient(135deg, var(--accent), #f472b6); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .logo-sub { font-size: 11px; color: var(--text3); margin-left: 4px; }
+    .logo-sub { font-size: 11px; color: var(--text3); }
     .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
     .badge { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
     .badge-idle { background: var(--bg3); color: var(--text3); }
@@ -39,184 +39,159 @@
     .badge-err { background: var(--red-bg); color: var(--red); }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     .main { flex: 1; display: flex; overflow: hidden; }
-    .sidebar { width: 380px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
-    .section { padding: 16px; border-bottom: 1px solid var(--border); }
-    .section-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-    .section-num { width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .section-num.done { background: var(--green); }
-    .label { font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 5px; display: block; margin-top: 10px; }
+
+    /* ── Sidebar ── */
+    .sidebar { width: 360px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border); overflow-y: auto; }
+    .section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .section-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .label { font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 4px; display: block; margin-top: 8px; }
     .label:first-child { margin-top: 0; }
     .label-hint { font-weight: 400; color: var(--text3); }
 
-    .dropzone { border: 2px dashed var(--border); border-radius: var(--r); padding: 32px 16px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
+    .dropzone { border: 2px dashed var(--border); border-radius: var(--r); padding: 24px 16px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
     .dropzone:hover, .dropzone.active { border-color: var(--accent); background: var(--glow); }
     .dropzone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-    .dz-icon { font-size: 36px; margin-bottom: 8px; }
-    .dz-text { font-size: 14px; font-weight: 600; color: var(--text2); }
-    .dz-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
-    .file-info { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--glow); border: 1px solid rgba(139, 92, 246, .2); border-radius: 8px; margin-top: 10px; }
-    .file-info-icon { font-size: 20px; }
-    .file-info-name { font-size: 12px; font-weight: 700; color: var(--accent2); flex: 1; word-break: break-all; }
-    .file-info-size { font-size: 10px; color: var(--text3); }
-    .file-info-rm { background: none; color: var(--text3); padding: 2px 6px; border-radius: 4px; font-size: 14px; }
-    .file-info-rm:hover { color: var(--red); }
+    .dz-icon { font-size: 28px; margin-bottom: 6px; }
+    .dz-text { font-size: 13px; font-weight: 600; color: var(--text2); }
+    .dz-sub { font-size: 10px; color: var(--text3); margin-top: 3px; }
 
-    .keys-textarea { font-family: 'Consolas', monospace; font-size: 11px; line-height: 1.6; min-height: 65px; resize: vertical; padding: 8px 10px; }
-    .key-count { display: flex; gap: 8px; margin-top: 6px; font-size: 10px; font-weight: 700; }
+    .keys-textarea { font-family: 'Consolas', monospace; font-size: 11px; line-height: 1.6; min-height: 55px; resize: vertical; padding: 6px 10px; }
+    .key-count { display: flex; gap: 6px; margin-top: 5px; font-size: 10px; font-weight: 700; }
     .key-count-gem { color: var(--accent2); background: var(--glow); padding: 2px 8px; border-radius: 10px; }
     .key-count-groq { color: var(--orange); background: var(--orange-bg); padding: 2px 8px; border-radius: 10px; }
-    .model-row { display: flex; gap: 8px; margin-top: 6px; }
-    .model-row select { flex: 1; font-size: 11px; padding: 6px 8px; }
-    .duration-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
-    .duration-input { width: 80px; text-align: center; font-size: 12px; font-weight: 700; }
-    .duration-label { font-size: 11px; color: var(--text3); }
+    .model-row { display: flex; gap: 8px; margin-top: 5px; }
+    .model-row select { flex: 1; font-size: 11px; padding: 5px 8px; }
+    .duration-row { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
 
-    .btn { padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; transition: all .15s; letter-spacing: .2px; width: 100%; }
+    .btn { padding: 9px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; transition: all .15s; width: 100%; }
     .btn-primary { background: linear-gradient(135deg, var(--accent), #7c3aed); color: #fff; box-shadow: 0 4px 15px rgba(139, 92, 246, .3); }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(139, 92, 246, .4); }
     .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
-    .btn-secondary { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: var(--border); color: var(--text); }
-    .btn-success { background: var(--green); color: #fff; }
-    .btn-success:hover { opacity: .85; }
 
-    .progress-area { display: none; margin-top: 12px; }
-    .progress-bar { width: 100%; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin: 6px 0; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #f472b6); border-radius: 3px; transition: width .3s ease; width: 0%; }
-    .progress-text { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); font-weight: 600; }
+    /* ── Queue ── */
+    .queue-list { margin-top: 8px; }
+    .queue-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; font-size: 11px; transition: all .2s; }
+    .queue-item.active { border-color: var(--accent); background: var(--glow); }
+    .queue-item.done { border-color: var(--green); background: var(--green-bg); }
+    .queue-item.error { border-color: var(--red); background: var(--red-bg); }
+    .qi-icon { font-size: 16px; flex-shrink: 0; }
+    .qi-info { flex: 1; min-width: 0; }
+    .qi-name { font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .qi-status { font-size: 10px; color: var(--text3); margin-top: 2px; }
+    .qi-progress { width: 100%; height: 3px; background: var(--bg); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+    .qi-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #f472b6); border-radius: 2px; transition: width .3s; width: 0%; }
+    .qi-remove { background: none; color: var(--text3); padding: 2px 5px; font-size: 12px; border-radius: 4px; }
+    .qi-remove:hover { color: var(--red); }
+    .qi-badge { font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+    .qi-badge.done { background: var(--green-bg); color: var(--green); }
+    .qi-badge.running { background: var(--glow); color: var(--accent2); animation: pulse 1.5s infinite; }
+    .qi-badge.waiting { background: var(--bg); color: var(--text3); }
+    .qi-badge.error { background: var(--red-bg); color: var(--red); }
 
-    .workers-area { margin-top: 10px; max-height: 200px; overflow-y: auto; }
-    .worker-row { display: flex; align-items: center; gap: 8px; padding: 4px 8px; margin: 2px 0; border-radius: 6px; font-size: 11px; font-weight: 600; transition: all .2s; }
-    .worker-row.running { background: var(--glow); color: var(--accent2); }
-    .worker-row.done { background: var(--green-bg); color: var(--green); }
-    .worker-row.error { background: var(--red-bg); color: var(--red); }
-    .worker-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .worker-row.running .worker-dot { background: var(--accent); animation: pulse 1s infinite; }
-    .worker-row.done .worker-dot { background: var(--green); }
-    .worker-row.error .worker-dot { background: var(--red); }
-    .worker-tag { font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; flex-shrink: 0; }
-    .worker-tag.gemini { background: var(--glow); color: var(--accent2); }
-    .worker-tag.groq { background: var(--orange-bg); color: var(--orange); }
-    .worker-msg { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    /* ── Editor ── */
+    .editor { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .editor-header { display: flex; align-items: center; gap: 12px; padding: 8px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .editor-title { font-size: 12px; font-weight: 700; color: var(--text2); }
+    .editor-info { font-size: 11px; color: var(--text3); margin-left: auto; }
+    .editor-tabs { display: flex; gap: 2px; padding: 0 20px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
+    .editor-tab { padding: 7px 14px; font-size: 11px; font-weight: 600; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all .15s; }
+    .editor-tab:hover { color: var(--text2); }
+    .editor-tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+    .sub-header { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg2); }
+    .sub-header-col { padding: 6px 14px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); }
+    .col-idx { width: 45px; text-align: center; border-right: 1px solid var(--border); }
+    .col-time { width: 200px; border-right: 1px solid var(--border); }
+    .col-text { flex: 1; }
+    .sub-list { flex: 1; overflow-y: auto; }
+    .sub-row { display: flex; border-bottom: 1px solid var(--border); transition: background .1s; }
+    .sub-row:hover { background: var(--bg3); }
+    .sub-cell { padding: 8px 14px; font-size: 12px; line-height: 1.5; }
+    .sub-cell.col-idx { width: 45px; text-align: center; font-size: 10px; font-weight: 700; color: var(--text3); border-right: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
+    .sub-cell.col-time { width: 200px; border-right: 1px solid var(--border); font-family: 'Consolas', monospace; font-size: 10px; color: var(--accent2); display: flex; align-items: center; }
+    .sub-cell.col-text { flex: 1; }
+    .sub-textarea { background: transparent; border: none; color: var(--text); font-size: 12px; line-height: 1.5; width: 100%; resize: none; font-family: var(--font); padding: 0; }
+    .sub-textarea:focus { outline: none; background: var(--glow); border-radius: 4px; padding: 3px; margin: -3px; }
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text3); gap: 10px; }
+    .empty-icon { font-size: 48px; opacity: .3; }
+    .empty-text { font-size: 14px; font-weight: 600; }
 
-    .log-area { margin-top: 8px; max-height: 180px; overflow-y: auto; background: #0d0d15; border: 1px solid var(--border); border-radius: 8px; padding: 6px 0; font-family: 'Consolas', monospace; font-size: 10px; }
-    .log-line { padding: 2px 10px; line-height: 1.5; white-space: pre-wrap; word-break: break-all; }
+    /* ── Floating Log ── */
+    .float-log { position: fixed; bottom: 0; right: 0; width: 420px; max-height: 280px; background: #0d0d18; border: 1px solid var(--border); border-bottom: none; border-right: none; border-radius: 12px 0 0 0; display: flex; flex-direction: column; z-index: 1000; box-shadow: -4px -4px 20px rgba(0,0,0,.5); transition: max-height .3s; }
+    .float-log.collapsed { max-height: 34px; }
+    .float-log-header { display: flex; align-items: center; padding: 7px 14px; cursor: pointer; border-bottom: 1px solid var(--border); flex-shrink: 0; user-select: none; }
+    .float-log-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); flex: 1; }
+    .float-log-toggle { font-size: 12px; color: var(--text3); background: none; padding: 2px 6px; }
+    .float-log-body { flex: 1; overflow-y: auto; padding: 4px 0; font-family: 'Consolas', monospace; font-size: 10px; min-height: 0; }
+    .log-line { padding: 1px 12px; line-height: 1.6; white-space: pre-wrap; word-break: break-all; }
     .log-line.info { color: var(--text2); }
     .log-line.ok { color: var(--green); }
     .log-line.warn { color: var(--orange); }
     .log-line.err { color: var(--red); }
     .log-line.accent { color: var(--accent2); }
     .log-time { color: var(--text3); margin-right: 6px; }
+    .float-log-count { font-size: 9px; background: var(--accent); color: #fff; padding: 1px 6px; border-radius: 8px; margin-left: 8px; font-weight: 800; }
 
-    .editor { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .editor-header { display: flex; align-items: center; gap: 12px; padding: 10px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    .editor-title { font-size: 12px; font-weight: 700; color: var(--text2); }
-    .editor-info { font-size: 11px; color: var(--text3); margin-left: auto; }
-    .editor-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    .toolbar-btn { padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; background: var(--bg3); color: var(--text2); border: 1px solid var(--border); transition: all .15s; }
-    .toolbar-btn:hover { border-color: var(--accent); color: var(--accent2); background: var(--glow); }
-
-    .sub-header { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg2); }
-    .sub-header-col { padding: 8px 14px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); }
-    .col-idx { width: 50px; text-align: center; border-right: 1px solid var(--border); }
-    .col-time { width: 220px; border-right: 1px solid var(--border); }
-    .col-text { flex: 1; }
-    .sub-list { flex: 1; overflow-y: auto; }
-    .sub-row { display: flex; border-bottom: 1px solid var(--border); transition: background .1s; }
-    .sub-row:hover { background: var(--bg3); }
-    .sub-cell { padding: 10px 14px; font-size: 13px; line-height: 1.6; }
-    .sub-cell.col-idx { width: 50px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text3); border-right: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
-    .sub-cell.col-time { width: 220px; border-right: 1px solid var(--border); font-family: 'Consolas', monospace; font-size: 11px; color: var(--accent2); display: flex; align-items: center; }
-    .sub-cell.col-text { flex: 1; }
-    .sub-textarea { background: transparent; border: none; color: var(--text); font-size: 13px; line-height: 1.6; width: 100%; resize: none; font-family: var(--font); padding: 0; }
-    .sub-textarea:focus { outline: none; background: var(--glow); border-radius: 4px; padding: 4px; margin: -4px; }
-
-    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text3); gap: 12px; }
-    .empty-icon { font-size: 64px; opacity: .3; }
-    .empty-text { font-size: 16px; font-weight: 600; }
-    .empty-sub { font-size: 12px; }
-    .statusbar { display: flex; align-items: center; gap: 12px; padding: 6px 20px; background: var(--bg2); border-top: 1px solid var(--border); flex-shrink: 0; font-size: 11px; color: var(--text3); }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .fade-in { animation: fadeIn .3s ease; }
+    .statusbar { display: flex; align-items: center; padding: 5px 20px; background: var(--bg2); border-top: 1px solid var(--border); flex-shrink: 0; font-size: 10px; color: var(--text3); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn .25s ease; }
   </style>
 </head>
 <body>
   <div class="app">
     <div class="header">
       <div class="logo">🎧 SubExtractor</div>
-      <span class="logo-sub">AI Subtitle Generator — Multi-Key Parallel</span>
+      <span class="logo-sub">Multi-File Queue • Parallel AI</span>
       <div class="header-right">
-        <span id="langBadge" style="display:none; font-size:11px; padding:3px 10px; border-radius:20px; background:var(--glow); color:var(--accent2); font-weight:700;"></span>
         <span id="badge" class="badge badge-idle">SẴN SÀNG</span>
       </div>
     </div>
     <div class="main">
       <div class="sidebar">
+        <!-- Files -->
         <div class="section">
-          <div class="section-title"><div class="section-num" id="stepNum1">1</div> CHỌN FILE AUDIO / VIDEO</div>
+          <div class="section-title">📁 CHỌN FILE (nhiều file)</div>
           <div class="dropzone" id="dropzone">
-            <input type="file" id="fileInput" accept=".mp3,.wav,.aac,.ogg,.flac,.aiff,.m4a,.mp4,.mkv,.webm,.mov">
+            <input type="file" id="fileInput" accept=".mp3,.wav,.aac,.ogg,.flac,.aiff,.m4a,.mp4,.mkv,.webm,.mov" multiple>
             <div class="dz-icon">🎵</div>
             <div class="dz-text">Kéo thả file vào đây</div>
-            <div class="dz-sub">MP3, WAV, OGG, FLAC, MP4, MKV, WebM — tối đa 2GB</div>
+            <div class="dz-sub">Chọn nhiều file cùng lúc • MP3, MP4, MKV, WAV...</div>
           </div>
-          <div id="fileInfoArea" style="display:none;">
-            <div class="file-info"><span class="file-info-icon">🎵</span><span class="file-info-name" id="fileName"></span><span class="file-info-size" id="fileSize"></span><button class="file-info-rm" onclick="clearFile()">✕</button></div>
-          </div>
-          <label class="label" style="margin-top:10px;">⏱️ Thời lượng (giây) <span class="label-hint">— để trống = tự ước lượng</span></label>
-          <div class="duration-row">
-            <input class="duration-input" type="number" id="durationInput" placeholder="auto" min="0" step="1">
-            <span class="duration-label">giây</span>
-          </div>
+          <div class="queue-list" id="queueList"></div>
         </div>
 
+        <!-- Settings -->
         <div class="section">
-          <div class="section-title"><div class="section-num" id="stepNum2">2</div> API KEYS</div>
-          <label class="label">🔑 Dán API keys <span class="label-hint">— mỗi dòng 1 key</span></label>
-          <textarea class="keys-textarea" id="apiKeys" rows="4" placeholder="AIzaSy... (Gemini)&#10;gsk_abc... (Groq)&#10;&#10;AIza = Gemini, gsk_ = Groq"></textarea>
+          <div class="section-title">⚙️ CẤU HÌNH</div>
+          <label class="label">🔑 API Keys <span class="label-hint">— mỗi dòng 1 key</span></label>
+          <textarea class="keys-textarea" id="apiKeys" rows="3" placeholder="AIzaSy... (Gemini)&#10;gsk_abc... (Groq)"></textarea>
           <div class="key-count" id="keyCount"></div>
           <div class="model-row">
-            <div style="flex:1;"><label class="label">🤖 Gemini</label><select id="geminiModel"><option value="gemini-2.5-flash">⚡ 2.5 Flash</option><option value="gemini-2.5-pro">🧠 2.5 Pro</option><option value="gemini-2.0-flash">⚡ 2.0 Flash</option></select></div>
-            <div style="flex:1;"><label class="label">🎤 Groq</label><select id="groqModel"><option value="whisper-large-v3-turbo">⚡ Turbo</option><option value="whisper-large-v3">🧠 v3</option></select></div>
+            <div style="flex:1;"><label class="label">Gemini</label><select id="geminiModel"><option value="gemini-2.5-flash">⚡ 2.5 Flash</option><option value="gemini-2.5-pro">🧠 2.5 Pro</option><option value="gemini-2.0-flash">⚡ 2.0 Flash</option></select></div>
+            <div style="flex:1;"><label class="label">Groq</label><select id="groqModel"><option value="whisper-large-v3-turbo">⚡ Turbo</option><option value="whisper-large-v3">🧠 v3</option></select></div>
           </div>
-          <label class="label">🚀 Luồng song song <span class="label-hint">— chia audio thành N đoạn</span></label>
+          <label class="label">🚀 Luồng song song</label>
           <div class="duration-row">
-            <input type="range" id="threadsSlider" min="1" max="20" value="5" style="flex:1; accent-color:var(--accent);" oninput="updateThreadsDisplay()">
-            <span id="threadsValue" style="min-width:35px; text-align:center; font-weight:800; color:var(--accent2); font-size:14px;">5</span>
+            <input type="range" id="threadsSlider" min="1" max="20" value="5" style="flex:1; accent-color:var(--accent);" oninput="G('threadsValue').textContent=this.value">
+            <span id="threadsValue" style="min-width:30px; text-align:center; font-weight:800; color:var(--accent2); font-size:13px;">5</span>
           </div>
-          <div id="totalWorkers" style="font-size:10px; color:var(--text3); margin-top:3px;"></div>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+            <input type="checkbox" id="autoDownload" checked style="width:auto;">
+            <label for="autoDownload" style="font-size:11px; color:var(--text2); cursor:pointer; margin:0;">💾 Tự động tải SRT khi xong</label>
+          </div>
         </div>
 
+        <!-- Action -->
         <div class="section">
-          <div class="section-title"><div class="section-num" id="stepNum3">3</div> TÁCH PHỤ ĐỀ</div>
-          <button class="btn btn-primary" id="btnStart" onclick="startTranscription()" disabled>🚀 Bắt đầu tách phụ đề</button>
-          <div class="progress-area" id="progressArea">
-            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-            <div class="progress-text"><span id="progressLabel">...</span><span id="progressPercent">0%</span></div>
-            <div class="workers-area" id="workersArea"></div>
-          </div>
-        </div>
-
-        <div class="section" id="downloadSection" style="display:none;">
-          <div class="section-title"><div class="section-num done">✓</div> TẢI VỀ</div>
-          <button class="btn btn-success" onclick="downloadSRT()">💾 Tải file SRT</button>
-          <button class="btn btn-secondary" style="margin-top:6px;" onclick="copySRT()">📋 Copy SRT</button>
-        </div>
-
-        <div class="section" id="logSection" style="display:none; flex:1; min-height:0;">
-          <div class="section-title">📟 ACTIVITY LOG</div>
-          <div class="log-area" id="logArea" style="display:block; max-height:none; flex:1;"></div>
+          <button class="btn btn-primary" id="btnStart" onclick="startQueue()" disabled>🚀 Bắt đầu tách tất cả</button>
         </div>
       </div>
 
+      <!-- Editor -->
       <div class="editor">
         <div class="editor-header"><span class="editor-title">📝 Phụ đề</span><span class="editor-info" id="editorInfo"></span></div>
-        <div class="empty-state" id="emptyState"><div class="empty-icon">🎧</div><div class="empty-text">Chưa có phụ đề</div><div class="empty-sub">Upload file → dán key → Tách phụ đề</div></div>
-        <div id="subtitleArea" style="display:none; flex-direction:column; overflow:hidden;">
-          <div class="editor-toolbar">
-            <button class="toolbar-btn" onclick="downloadSRT()">💾 Tải SRT</button>
-            <button class="toolbar-btn" onclick="copySRT()">📋 Copy</button>
-          </div>
+        <div class="editor-tabs" id="editorTabs" style="display:none;"></div>
+        <div class="empty-state" id="emptyState"><div class="empty-icon">🎧</div><div class="empty-text">Thêm file → cấu hình → Bắt đầu</div></div>
+        <div id="subtitleArea" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
           <div class="sub-header">
             <div class="sub-header-col col-idx">#</div>
             <div class="sub-header-col col-time">THỜI GIAN</div>
@@ -229,49 +204,129 @@
     <div class="statusbar"><span id="statusText">Sẵn sàng</span></div>
   </div>
 
+  <!-- Floating Log -->
+  <div class="float-log" id="floatLog">
+    <div class="float-log-header" onclick="toggleLog()">
+      <span class="float-log-title">📟 ACTIVITY LOG</span>
+      <span class="float-log-count" id="logCount">0</span>
+      <button class="float-log-toggle" id="logToggle">▼</button>
+    </div>
+    <div class="float-log-body" id="logBody"></div>
+  </div>
+
   <script>
-    let selectedFile = null, srtContent = '', srtEntries = [], srtFileName = 'output.srt', ws = null, streamIdx = 0;
     const G = id => document.getElementById(id);
 
-    // ── File ──
+    // ── Queue State ──
+    let queue = []; // [{id, file, name, size, duration, status, srt, entries, ws}]
+    let activeTab = null;
+    let logCount = 0;
+
+    // ── File Input ──
     const dropzone = G('dropzone'), fileInput = G('fileInput');
     dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('active'); });
     dropzone.addEventListener('dragleave', () => dropzone.classList.remove('active'));
-    dropzone.addEventListener('drop', e => { e.preventDefault(); dropzone.classList.remove('active'); if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
-    fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+    dropzone.addEventListener('drop', e => { e.preventDefault(); dropzone.classList.remove('active'); addFiles(e.dataTransfer.files); });
+    fileInput.addEventListener('change', e => { addFiles(e.target.files); fileInput.value = ''; });
 
-    function handleFile(file) {
-      const ext = file.name.split('.').pop().toLowerCase();
-      if (!['mp3','wav','aac','ogg','flac','aiff','m4a','mp4','mkv','webm','mov'].includes(ext)) { setStatus('❌ File không hỗ trợ'); return; }
-      selectedFile = file;
-      G('fileName').textContent = file.name;
-      G('fileSize').textContent = formatSize(file.size);
-      G('fileInfoArea').style.display = '';
-      dropzone.style.display = 'none';
-      G('stepNum1').classList.add('done'); G('stepNum1').textContent = '✓';
+    const ALLOWED = ['mp3','wav','aac','ogg','flac','aiff','m4a','mp4','mkv','webm','mov'];
+
+    function addFiles(files) {
+      for (const f of files) {
+        const ext = f.name.split('.').pop().toLowerCase();
+        if (!ALLOWED.includes(ext)) continue;
+        const id = 'q_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+        const item = { id, file: f, name: f.name, size: f.size, duration: 0, status: 'waiting', srt: '', entries: [], percent: 0, ws: null };
+        queue.push(item);
+        // Auto-detect duration
+        detectDuration(item, ext);
+      }
+      renderQueue();
       updateStartBtn();
+    }
 
-      // Auto-detect duration
+    function detectDuration(item, ext) {
       const isVideo = ['mp4','mkv','webm','mov'].includes(ext);
       const media = document.createElement(isVideo ? 'video' : 'audio');
       media.preload = 'metadata';
-      const url = URL.createObjectURL(file);
+      const url = URL.createObjectURL(item.file);
       media.src = url;
       media.onloadedmetadata = () => {
-        const dur = Math.round(media.duration);
-        if (dur > 0 && isFinite(dur)) {
-          G('durationInput').value = dur;
-          const mm = Math.floor(dur / 60), ss = dur % 60;
-          setStatus(`📁 ${file.name} — ${mm}:${String(ss).padStart(2,'0')} (${formatSize(file.size)})`);
-        }
+        if (media.duration > 0 && isFinite(media.duration)) item.duration = Math.round(media.duration);
         URL.revokeObjectURL(url);
+        renderQueue();
       };
     }
 
-    function clearFile() { selectedFile = null; G('fileInfoArea').style.display = 'none'; dropzone.style.display = ''; G('stepNum1').classList.remove('done'); G('stepNum1').textContent = '1'; fileInput.value = ''; updateStartBtn(); }
-    function formatSize(b) { return b < 1024 ? b+' B' : b < 1048576 ? (b/1024).toFixed(1)+' KB' : (b/1048576).toFixed(1)+' MB'; }
+    function removeFromQueue(id) {
+      queue = queue.filter(q => q.id !== id);
+      renderQueue();
+      updateStartBtn();
+    }
 
-    // ── Keys ──
+    function formatSize(b) { return b < 1048576 ? (b/1024).toFixed(0)+' KB' : (b/1048576).toFixed(1)+' MB'; }
+    function formatDuration(s) { if (!s) return ''; const m = Math.floor(s/60), ss = s%60; return `${m}:${String(ss).padStart(2,'0')}`; }
+
+    function renderQueue() {
+      const el = G('queueList');
+      el.innerHTML = '';
+      queue.forEach(q => {
+        const cls = q.status === 'running' ? 'active' : q.status === 'done' ? 'done' : q.status === 'error' ? 'error' : '';
+        const icon = q.status === 'done' ? '✅' : q.status === 'running' ? '⏳' : q.status === 'error' ? '❌' : '📄';
+        const badgeCls = q.status === 'running' ? 'running' : q.status === 'done' ? 'done' : q.status === 'error' ? 'error' : 'waiting';
+        const badgeText = q.status === 'running' ? 'ĐANG CHẠY' : q.status === 'done' ? 'XONG' : q.status === 'error' ? 'LỖI' : 'CHỜ';
+        const dur = q.duration ? ` • ${formatDuration(q.duration)}` : '';
+        const div = document.createElement('div');
+        div.className = `queue-item ${cls} fade-in`;
+        div.onclick = () => switchTab(q.id);
+        div.innerHTML = `
+          <span class="qi-icon">${icon}</span>
+          <div class="qi-info">
+            <div class="qi-name">${q.name}</div>
+            <div class="qi-status">${formatSize(q.size)}${dur}</div>
+            ${q.status === 'running' ? `<div class="qi-progress"><div class="qi-progress-fill" style="width:${q.percent}%"></div></div>` : ''}
+          </div>
+          <span class="qi-badge ${badgeCls}">${badgeText}</span>
+          ${q.status === 'waiting' ? `<button class="qi-remove" onclick="event.stopPropagation();removeFromQueue('${q.id}')">✕</button>` : ''}
+        `;
+        el.appendChild(div);
+      });
+
+      // Update tabs
+      renderTabs();
+    }
+
+    function renderTabs() {
+      const tabs = G('editorTabs');
+      const doneItems = queue.filter(q => q.status === 'done' || q.status === 'running');
+      if (doneItems.length === 0) { tabs.style.display = 'none'; return; }
+      tabs.style.display = 'flex';
+      tabs.innerHTML = '';
+      doneItems.forEach(q => {
+        const tab = document.createElement('div');
+        tab.className = `editor-tab ${activeTab === q.id ? 'active' : ''}`;
+        tab.textContent = q.name.length > 20 ? q.name.slice(0, 18) + '...' : q.name;
+        tab.onclick = () => switchTab(q.id);
+        tabs.appendChild(tab);
+      });
+    }
+
+    function switchTab(id) {
+      activeTab = id;
+      const item = queue.find(q => q.id === id);
+      if (!item) return;
+      renderTabs();
+      if (item.entries.length > 0 || item.status === 'running') {
+        G('emptyState').style.display = 'none';
+        G('subtitleArea').style.display = 'flex';
+        renderSubtitles(item.entries, item.status !== 'done');
+        G('editorInfo').textContent = item.status === 'done'
+          ? `${item.entries.length} seg • ${item.name}`
+          : `⏳ ${item.entries.length} seg... • ${item.name}`;
+      }
+    }
+
+    // ── API Keys ──
     const keysEl = G('apiKeys');
     keysEl.addEventListener('input', () => { updateKeyCount(); updateStartBtn(); localStorage.setItem('subex_keys', keysEl.value); });
     const saved = localStorage.getItem('subex_keys'); if (saved) keysEl.value = saved;
@@ -279,174 +334,185 @@
     function updateKeyCount() {
       const keys = getKeys(); let gem = 0, groq = 0;
       keys.forEach(k => { if (k.startsWith('gsk_') || k.toLowerCase().startsWith('groq:')) groq++; else gem++; });
-      const el = G('keyCount'), tpk = parseInt(G('threadsSlider').value) || 5;
-      if (!keys.length) { el.innerHTML = ''; G('totalWorkers').textContent = ''; }
-      else { el.innerHTML = `${gem ? `<span class="key-count-gem">🟣 ${gem} Gemini</span>` : ''}${groq ? `<span class="key-count-groq">🟠 ${groq} Groq</span>` : ''}`; G('totalWorkers').textContent = `→ ${tpk} luồng song song`; }
+      G('keyCount').innerHTML = keys.length ? `${gem ? `<span class="key-count-gem">🟣 ${gem} Gemini</span>` : ''}${groq ? `<span class="key-count-groq">🟠 ${groq} Groq</span>` : ''}` : '';
     }
     updateKeyCount();
-    function updateThreadsDisplay() { G('threadsValue').textContent = G('threadsSlider').value; updateKeyCount(); }
-    function updateStartBtn() { G('btnStart').disabled = !(selectedFile && getKeys().length > 0); }
-    updateStartBtn();
+    function updateStartBtn() { G('btnStart').disabled = !(queue.some(q => q.status === 'waiting') && getKeys().length > 0); }
 
-    // ── Activity Log ──
+    // ── Floating Log ──
+    let logCollapsed = false;
+    function toggleLog() { logCollapsed = !logCollapsed; G('floatLog').classList.toggle('collapsed', logCollapsed); G('logToggle').textContent = logCollapsed ? '▲' : '▼'; }
     function addLog(msg, type = 'info') {
-      const area = G('logArea');
-      G('logSection').style.display = '';
+      logCount++;
+      G('logCount').textContent = logCount;
+      const body = G('logBody');
       const line = document.createElement('div');
       line.className = `log-line ${type}`;
       const now = new Date();
       const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
       line.innerHTML = `<span class="log-time">${ts}</span>${msg}`;
-      area.appendChild(line);
-      area.scrollTop = area.scrollHeight;
+      body.appendChild(line);
+      body.scrollTop = body.scrollHeight;
+      if (logCollapsed) { logCollapsed = false; G('floatLog').classList.remove('collapsed'); G('logToggle').textContent = '▼'; }
     }
 
-    // ── Main Flow: HTTP upload → WebSocket process ──
-    async function startTranscription() {
-      if (!selectedFile || !getKeys().length) return;
-      const btn = G('btnStart');
-      btn.disabled = true; btn.textContent = '⏳ Uploading...';
-      setBadge('work', 'UPLOADING');
-      G('progressArea').style.display = ''; G('workersArea').innerHTML = '';
-      G('logArea').innerHTML = ''; G('logSection').style.display = '';
-      srtEntries = []; srtContent = ''; streamIdx = 0;
-      G('subList').innerHTML = ''; G('emptyState').style.display = 'none';
-      G('subtitleArea').style.display = 'flex'; G('editorInfo').textContent = '⏳ Uploading...';
+    // ── Queue Processing ──
+    async function startQueue() {
+      const waiting = queue.filter(q => q.status === 'waiting');
+      if (!waiting.length || !getKeys().length) return;
+      G('btnStart').disabled = true;
+      G('btnStart').textContent = `⏳ Đang xử lý ${waiting.length} file...`;
+      setBadge('work', `${waiting.length} FILE`);
+      logCount = 0; G('logBody').innerHTML = '';
+      addLog(`🚀 Bắt đầu xử lý ${waiting.length} file`, 'accent');
 
-      addLog(`📁 File: ${selectedFile.name} (${formatSize(selectedFile.size)})`, 'info');
-      addLog(`🔑 Keys: ${getKeys().length} | Luồng: ${G('threadsSlider').value}`, 'info');
-      addLog(`📤 Bắt đầu upload...`, 'accent');
+      // Process all files in parallel
+      const promises = waiting.map(item => processFile(item));
+      await Promise.all(promises);
 
-      setProgress(0, '📤 Uploading file...');
+      const doneCount = queue.filter(q => q.status === 'done').length;
+      const errCount = queue.filter(q => q.status === 'error').length;
+      setBadge('done', `${doneCount} XONG`);
+      G('btnStart').textContent = '🚀 Bắt đầu tách tất cả';
+      updateStartBtn();
+      addLog(`🎉 Hoàn tất: ${doneCount} thành công, ${errCount} lỗi`, 'ok');
+    }
+
+    async function processFile(item) {
+      item.status = 'running';
+      item.entries = [];
+      item.percent = 0;
+      renderQueue();
+      if (!activeTab) switchTab(item.id);
+      addLog(`📤 [${item.name}] Uploading...`, 'info');
+
       try {
+        // Step 1: HTTP upload
         const formData = new FormData();
-        formData.append('file', selectedFile);
+        formData.append('file', item.file);
         const t0 = Date.now();
 
         const uploadResult = await new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open('POST', '/upload');
-          xhr.onload = () => {
-            if (xhr.status === 200) resolve(JSON.parse(xhr.responseText));
-            else reject(new Error(`Upload failed: ${xhr.status}`));
-          };
-          xhr.onerror = () => reject(new Error('Upload network error'));
+          xhr.onload = () => xhr.status === 200 ? resolve(JSON.parse(xhr.responseText)) : reject(new Error(`HTTP ${xhr.status}`));
+          xhr.onerror = () => reject(new Error('Network error'));
           xhr.upload.onprogress = (e) => {
-            if (e.lengthComputable) {
-              const pct = Math.round(e.loaded / e.total * 100);
-              setProgress(pct * 0.3, `📤 Uploading... ${pct}% (${formatSize(e.loaded)} / ${formatSize(e.total)})`);
-            }
+            if (e.lengthComputable) { item.percent = Math.round(e.loaded / e.total * 30); renderQueue(); }
           };
           xhr.send(formData);
         });
 
-        const uploadMs = Date.now() - t0;
-        addLog(`✅ Upload xong (${uploadResult.size_mb}MB) — ${(uploadMs/1000).toFixed(1)}s`, 'ok');
-        setProgress(30, `✅ Upload xong!`);
-        btn.textContent = '⏳ Đang tách...';
-        setBadge('work', 'ĐANG TÁCH...');
-        G('editorInfo').textContent = '⏳ Kết nối server...';
-        addLog(`🔌 Kết nối WebSocket...`, 'accent');
+        addLog(`✅ [${item.name}] Upload ${uploadResult.size_mb}MB — ${((Date.now()-t0)/1000).toFixed(1)}s`, 'ok');
 
-        // Step 2: WebSocket for processing
-        const loc = window.location;
-        const wsUrl = (loc.protocol === 'https:' ? 'wss://' : 'ws://') + (loc.host || 'localhost:8000') + '/ws/transcribe';
-        ws = new WebSocket(wsUrl);
+        // Step 2: WebSocket transcription
+        await new Promise((resolve, reject) => {
+          const loc = window.location;
+          const wsUrl = (loc.protocol === 'https:' ? 'wss://' : 'ws://') + (loc.host || 'localhost:8000') + '/ws/transcribe';
+          const ws = new WebSocket(wsUrl);
+          item.ws = ws;
 
-        ws.onopen = () => {
-          addLog(`🟢 WebSocket connected — gửi config...`, 'ok');
-          ws.send(JSON.stringify({
-            file_path: uploadResult.file_path,
-            file_name: selectedFile.name,
-            api_keys: getKeys(),
-            model_name: G('geminiModel').value,
-            groq_model: G('groqModel').value,
-            duration_hint: parseInt(G('durationInput').value) || 0,
-            threads_per_key: parseInt(G('threadsSlider').value) || 5,
-          }));
-        };
+          ws.onopen = () => {
+            addLog(`🔌 [${item.name}] Connected`, 'accent');
+            ws.send(JSON.stringify({
+              file_path: uploadResult.file_path,
+              file_name: item.name,
+              api_keys: getKeys(),
+              model_name: G('geminiModel').value,
+              groq_model: G('groqModel').value,
+              duration_hint: item.duration || 0,
+              threads_per_key: parseInt(G('threadsSlider').value) || 5,
+            }));
+          };
 
-        ws.onmessage = (e) => {
-          const data = JSON.parse(e.data);
-          if (data.type === 'progress') {
-            setProgress(30 + (data.percent || 0) * 0.7, data.message);
-            addLog(data.message, data.message?.includes('✅') ? 'ok' : 'accent');
-          } else if (data.type === 'worker') {
-            updateWorker(data);
-            const lt = data.status === 'done' ? 'ok' : data.status === 'error' ? 'err' : 'info';
-            addLog(`[${data.provider}#${data.worker_id}] ${data.message}`, lt);
-          } else if (data.type === 'partial') {
-            handlePartial(data);
-            addLog(`📝 +${(data.entries||[]).length} segments từ ${data.source}`, 'ok');
-          } else if (data.type === 'result') {
-            handleResult(data);
-            addLog(`🎉 Hoàn tất: ${data.total_segments} phụ đề — ${data.language}`, 'ok');
-          } else if (data.type === 'error') {
-            addLog(`❌ ${data.message}`, 'err');
-            setStatus('❌ ' + data.message); setBadge('err', 'LỖI');
-            btn.disabled = false; btn.textContent = '🚀 Bắt đầu tách phụ đề';
-          }
-        };
-        ws.onerror = () => { addLog('❌ WebSocket error', 'err'); setStatus('❌ WebSocket error'); setBadge('err', 'LỖI'); btn.disabled = false; btn.textContent = '🚀 Bắt đầu tách phụ đề'; };
-        ws.onclose = () => { ws = null; };
+          ws.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            if (data.type === 'progress') {
+              item.percent = 30 + (data.percent || 0) * 0.7;
+              renderQueue();
+              addLog(`[${item.name}] ${data.message}`, data.message?.includes('✅') ? 'ok' : 'info');
+            } else if (data.type === 'worker') {
+              addLog(`[${item.name}] [${data.provider}#${data.worker_id}] ${data.message}`,
+                data.status === 'done' ? 'ok' : data.status === 'error' ? 'err' : 'info');
+            } else if (data.type === 'partial') {
+              const entries = data.entries || [];
+              item.entries.push(...entries);
+              if (activeTab === item.id) appendPartialRows(entries);
+              addLog(`📝 [${item.name}] +${entries.length} seg [${data.source}]`, 'ok');
+            } else if (data.type === 'result') {
+              item.srt = data.srt;
+              item.entries = data.entries;
+              item.status = 'done';
+              item.percent = 100;
+              renderQueue();
+              if (activeTab === item.id) {
+                renderSubtitles(data.entries, false);
+                G('editorInfo').textContent = `${data.total_segments} seg • ${data.language} • ${item.name}`;
+              }
+              addLog(`🎉 [${item.name}] ${data.total_segments} phụ đề — ${data.language}`, 'ok');
+              // Auto-download
+              if (G('autoDownload').checked) downloadForItem(item, data.file_name);
+              resolve();
+            } else if (data.type === 'error') {
+              item.status = 'error';
+              renderQueue();
+              addLog(`❌ [${item.name}] ${data.message}`, 'err');
+              resolve();
+            }
+          };
+          ws.onerror = () => { item.status = 'error'; renderQueue(); addLog(`❌ [${item.name}] WebSocket error`, 'err'); resolve(); };
+          ws.onclose = () => { item.ws = null; if (item.status === 'running') { item.status = 'error'; renderQueue(); resolve(); } };
+        });
+
       } catch (err) {
-        addLog(`❌ ${err.message}`, 'err');
-        setStatus('❌ ' + err.message); setBadge('err', 'LỖI');
-        btn.disabled = false; btn.textContent = '🚀 Bắt đầu tách phụ đề';
+        item.status = 'error';
+        renderQueue();
+        addLog(`❌ [${item.name}] ${err.message}`, 'err');
       }
     }
 
-    function updateWorker(data) {
-      const area = G('workersArea');
-      let id = `w-${data.provider}-${data.worker_id}`, row = document.getElementById(id);
-      if (!row) { row = document.createElement('div'); row.id = id; row.className = 'worker-row fade-in'; area.appendChild(row); }
-      row.className = `worker-row ${data.status}`;
-      const tag = data.provider === 'groq' ? 'groq' : 'gemini';
-      row.innerHTML = `<div class="worker-dot"></div><span class="worker-tag ${tag}">${data.provider}</span><span class="worker-msg">${data.message || ''}</span>`;
-    }
+    // ── Subtitle Rendering ──
+    let streamIdx = 0;
 
-    function handlePartial(data) {
+    function appendPartialRows(entries) {
       const list = G('subList');
-      (data.entries || []).forEach((entry, i) => {
+      G('emptyState').style.display = 'none';
+      G('subtitleArea').style.display = 'flex';
+      entries.forEach((entry, i) => {
         streamIdx++;
         const row = document.createElement('div');
-        row.className = 'sub-row fade-in'; row.style.animationDelay = Math.min(i * 20, 200) + 'ms';
+        row.className = 'sub-row fade-in';
         row.innerHTML = `<div class="sub-cell col-idx">${streamIdx}</div><div class="sub-cell col-time">${entry.start || ''} → ${entry.end || ''}</div><div class="sub-cell col-text"><textarea class="sub-textarea" rows="1" readonly>${entry.text || ''}</textarea></div>`;
         list.appendChild(row);
-        setTimeout(() => { const ta = row.querySelector('.sub-textarea'); if (ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; } row.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 20);
+        setTimeout(() => { const ta = row.querySelector('.sub-textarea'); if (ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; } row.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 15);
       });
-      G('editorInfo').textContent = `⏳ ${streamIdx} segments...`;
+      G('editorInfo').textContent = `⏳ ${streamIdx} seg...`;
     }
 
-    function handleResult(data) {
-      srtContent = data.srt; srtEntries = data.entries; srtFileName = data.file_name;
-      G('langBadge').textContent = '🌐 ' + data.language; G('langBadge').style.display = '';
-      setBadge('done', 'HOÀN TẤT');
-      setProgress(100, `✅ ${data.total_segments} phụ đề — ${data.language}`);
-      G('editorInfo').textContent = `${data.total_segments} seg • ${data.language}`;
-      G('downloadSection').style.display = ''; G('stepNum3').classList.add('done'); G('stepNum3').textContent = '✓';
-      renderSubtitles(srtEntries);
-      G('btnStart').disabled = false; G('btnStart').textContent = '🚀 Bắt đầu tách phụ đề';
-      document.title = `✅ ${data.total_segments} sub — SubExtractor`;
-    }
-
-    function renderSubtitles(entries) {
-      const list = G('subList'); list.innerHTML = '';
+    function renderSubtitles(entries, readonly) {
+      const list = G('subList'); list.innerHTML = ''; streamIdx = 0;
+      G('emptyState').style.display = 'none';
+      G('subtitleArea').style.display = 'flex';
       entries.forEach((entry, i) => {
-        const row = document.createElement('div'); row.className = 'sub-row fade-in';
-        row.innerHTML = `<div class="sub-cell col-idx">${entry.index || i+1}</div><div class="sub-cell col-time">${entry.start || ''} → ${entry.end || ''}</div><div class="sub-cell col-text"><textarea class="sub-textarea" rows="1" oninput="autoResize(this); updateEntry(${i}, this.value)">${entry.text || ''}</textarea></div>`;
+        const row = document.createElement('div'); row.className = 'sub-row';
+        row.innerHTML = `<div class="sub-cell col-idx">${entry.index || i+1}</div><div class="sub-cell col-time">${entry.start || ''} → ${entry.end || ''}</div><div class="sub-cell col-text"><textarea class="sub-textarea" rows="1" ${readonly ? 'readonly' : `oninput="autoResize(this)"`}>${entry.text || ''}</textarea></div>`;
         list.appendChild(row);
-        setTimeout(() => { const ta = row.querySelector('.sub-textarea'); if (ta) autoResize(ta); }, 10);
+        setTimeout(() => { const ta = row.querySelector('.sub-textarea'); if (ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; } }, 10);
       });
     }
 
     function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-    function updateEntry(i, t) { if (srtEntries[i]) { srtEntries[i].text = t; regenerateSRT(); } }
-    function regenerateSRT() { srtContent = srtEntries.filter(e => e.text?.trim()).map((e, i) => `${i+1}\n${e.start} --> ${e.end}\n${e.text.trim()}`).join('\n\n') + '\n'; }
-    function downloadSRT() { if (!srtContent) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([srtContent], {type:'text/plain;charset=utf-8'})); a.download = srtFileName; a.click(); }
-    function copySRT() { if (srtContent) navigator.clipboard.writeText(srtContent).then(() => setStatus('📋 Copied!')); }
+
+    function downloadForItem(item, fileName) {
+      if (!item.srt) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([item.srt], {type:'text/plain;charset=utf-8'}));
+      a.download = fileName || item.name.replace(/\.[^.]+$/, '.srt');
+      a.click();
+      addLog(`💾 [${item.name}] Auto-downloaded: ${a.download}`, 'ok');
+    }
+
     function setBadge(t, txt) { const el = G('badge'); el.className = `badge badge-${t}`; el.textContent = txt; }
-    function setProgress(p, msg) { G('progressFill').style.width = p + '%'; G('progressPercent').textContent = Math.round(p) + '%'; if (msg) G('progressLabel').textContent = msg; }
     function setStatus(t) { G('statusText').textContent = t; }
     updateStartBtn();
   </script>
