@@ -320,7 +320,7 @@ async def websocket_transcribe(ws: WebSocket):
         all_entries = []
         errors = []
 
-        # ─── GROQ (fast, try first) ───
+        # ─── GROQ (fast, try ALL keys until one works) ───
         if groq_keys:
             for i, gk in enumerate(groq_keys):
                 try:
@@ -338,34 +338,34 @@ async def websocket_transcribe(ws: WebSocket):
                         await ws.send_json({
                             "type": "partial", "entries": entries, "source": f"groq-{i+1}"
                         })
-                        break  # Groq succeeded, skip remaining groq keys
+                        break
                 except Exception as e:
                     err = str(e)[:100]
                     errors.append(f"Groq #{i+1}: {err}")
                     await ws.send_json({
                         "type": "worker", "provider": "groq", "worker_id": i + 1,
-                        "status": "error", "message": f"Groq #{i+1}: {err}"
+                        "status": "error", "message": f"Groq #{i+1}: {err} → thử key tiếp..."
                     })
+                    # Continue to next Groq key automatically
 
-        # ─── GEMINI (parallel, if Groq failed or no Groq) ───
+        # ─── GEMINI (with retry + key fallback) ───
         if gemini_keys and not all_entries:
             loop = asyncio.get_event_loop()
 
-            # Upload to Gemini with FIRST working key only
+            # Try uploading with each key until one works
             await ws.send_json({
                 "type": "progress", "step": "gemini_upload",
                 "message": "☁️ Upload lên Gemini...", "percent": 15
             })
 
-            uploaded_file = None
-            working_client = None
+            # Build list of (client, uploaded_file) for working keys
+            key_uploads = []  # [(key_idx, client, uploaded_file)]
             for ki, kinfo in enumerate(gemini_keys):
                 try:
                     client = genai.Client(api_key=kinfo["key"])
                     uf = await loop.run_in_executor(
                         None, lambda c=client: c.files.upload(file=temp_path)
                     )
-                    # Wait for ACTIVE
                     for _ in range(120):
                         fi = await loop.run_in_executor(
                             None, lambda c=client, n=uf.name: c.files.get(name=n)
@@ -373,24 +373,28 @@ async def websocket_transcribe(ws: WebSocket):
                         if fi.state.name == "ACTIVE":
                             break
                         await asyncio.sleep(2)
-                    uploaded_file = uf
-                    working_client = client
+                    key_uploads.append((ki, client, uf))
                     logger.info(f"Upload OK with key #{ki+1}")
                     await ws.send_json({
                         "type": "progress", "step": "gemini_ready",
-                        "message": f"✅ Upload xong (key #{ki+1})", "percent": 30
+                        "message": f"✅ Upload key #{ki+1} OK ({len(key_uploads)} keys sẵn sàng)", "percent": 25
                     })
-                    break
+                    # Upload with first key is enough if only 1 key
+                    if len(key_uploads) >= 1 and len(gemini_keys) == 1:
+                        break
                 except Exception as e:
                     logger.error(f"Upload failed key #{ki+1}: {e}")
-                    errors.append(f"Upload key #{ki+1}: {str(e)[:80]}")
+                    await ws.send_json({
+                        "type": "worker", "provider": "gemini", "worker_id": f"upload-{ki+1}",
+                        "status": "error",
+                        "message": f"Key #{ki+1} upload lỗi → thử key tiếp..."
+                    })
 
-            if not uploaded_file:
-                await ws.send_json({"type": "error", "message": f"Upload Gemini thất bại: {'; '.join(errors)}"})
+            if not key_uploads:
+                await ws.send_json({"type": "error", "message": f"Upload Gemini thất bại tất cả keys: {'; '.join(errors)}"})
                 return
 
-            # Split into chunks — ALL workers use same client (same key)
-            # For billing accounts, single key handles 2000 RPM easily
+            # Split time ranges
             n_total = threads_per_key
             est_duration = duration_hint if duration_hint > 0 else max(60, file_size_mb * 8)
             chunk_secs = est_duration / n_total
@@ -403,39 +407,56 @@ async def websocket_transcribe(ws: WebSocket):
 
             await ws.send_json({
                 "type": "progress", "step": "gemini_go",
-                "message": f"🚀 {n_total} luồng song song — est. {int(est_duration)}s audio",
+                "message": f"🚀 {n_total} luồng | {len(key_uploads)} key — est. {int(est_duration)}s",
                 "percent": 35
             })
 
+            # Worker with retry + key fallback
+            max_retries = min(len(key_uploads), 3)
+
             async def worker(idx, start_mm, end_mm):
-                try:
-                    await ws.send_json({
-                        "type": "worker", "provider": "gemini", "worker_id": idx + 1,
-                        "status": "running",
-                        "message": f"G#{idx+1}: {start_mm}→{end_mm}"
-                    })
-                    entries = await gemini_transcribe_chunk(
-                        working_client, uploaded_file, model_name, start_mm, end_mm
-                    )
-                    await ws.send_json({
-                        "type": "worker", "provider": "gemini", "worker_id": idx + 1,
-                        "status": "done",
-                        "message": f"G#{idx+1}: {len(entries)} seg ✅"
-                    })
-                    await ws.send_json({
-                        "type": "partial", "entries": entries,
-                        "source": f"gemini-{idx+1}"
-                    })
-                    return entries
-                except Exception as e:
-                    err = str(e)[:100]
-                    errors.append(f"G#{idx+1}: {err}")
-                    logger.error(f"Worker G#{idx+1}: {e}")
-                    await ws.send_json({
-                        "type": "worker", "provider": "gemini", "worker_id": idx + 1,
-                        "status": "error", "message": f"G#{idx+1}: {err}"
-                    })
-                    return []
+                for attempt in range(max_retries):
+                    # Round-robin key, offset by attempt for fallback
+                    ku_idx = (idx + attempt) % len(key_uploads)
+                    ki, client, uf = key_uploads[ku_idx]
+                    try:
+                        retry_tag = f" (retry {attempt+1})" if attempt > 0 else ""
+                        await ws.send_json({
+                            "type": "worker", "provider": "gemini", "worker_id": idx + 1,
+                            "status": "running",
+                            "message": f"G#{idx+1} [K{ki+1}]: {start_mm}→{end_mm}{retry_tag}"
+                        })
+                        entries = await gemini_transcribe_chunk(
+                            client, uf, model_name, start_mm, end_mm
+                        )
+                        await ws.send_json({
+                            "type": "worker", "provider": "gemini", "worker_id": idx + 1,
+                            "status": "done",
+                            "message": f"G#{idx+1}: {len(entries)} seg ✅"
+                        })
+                        await ws.send_json({
+                            "type": "partial", "entries": entries,
+                            "source": f"gemini-{idx+1}"
+                        })
+                        return entries
+                    except Exception as e:
+                        err = str(e)[:80]
+                        logger.error(f"Worker G#{idx+1} attempt {attempt+1}: {e}")
+                        if attempt < max_retries - 1:
+                            await ws.send_json({
+                                "type": "worker", "provider": "gemini", "worker_id": idx + 1,
+                                "status": "error",
+                                "message": f"G#{idx+1}: {err} → chuyển key..."
+                            })
+                            await asyncio.sleep(1)
+                        else:
+                            errors.append(f"G#{idx+1}: {err}")
+                            await ws.send_json({
+                                "type": "worker", "provider": "gemini", "worker_id": idx + 1,
+                                "status": "error",
+                                "message": f"G#{idx+1}: {err} (hết retry)"
+                            })
+                return []
 
             tasks = [worker(i, tr[0], tr[1]) for i, tr in enumerate(time_ranges)]
             results = await asyncio.gather(*tasks)
@@ -443,13 +464,14 @@ async def websocket_transcribe(ws: WebSocket):
             for chunk_entries in results:
                 all_entries.extend(chunk_entries)
 
-            # Cleanup
-            try:
-                await loop.run_in_executor(
-                    None, lambda: working_client.files.delete(name=uploaded_file.name)
-                )
-            except:
-                pass
+            # Cleanup uploaded files
+            for ki, client, uf in key_uploads:
+                try:
+                    await loop.run_in_executor(
+                        None, lambda c=client, n=uf.name: c.files.delete(name=n)
+                    )
+                except:
+                    pass
 
         if not all_entries:
             await ws.send_json({

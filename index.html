@@ -169,14 +169,25 @@
             <div style="flex:1;"><label class="label">Gemini</label><select id="geminiModel"><option value="gemini-2.5-flash">⚡ 2.5 Flash</option><option value="gemini-2.5-pro">🧠 2.5 Pro</option><option value="gemini-2.0-flash">⚡ 2.0 Flash</option></select></div>
             <div style="flex:1;"><label class="label">Groq</label><select id="groqModel"><option value="whisper-large-v3-turbo">⚡ Turbo</option><option value="whisper-large-v3">🧠 v3</option></select></div>
           </div>
-          <label class="label">🚀 Luồng song song</label>
+          <label class="label">🚀 Luồng song song <span class="label-hint">per file</span></label>
           <div class="duration-row">
             <input type="range" id="threadsSlider" min="1" max="20" value="5" style="flex:1; accent-color:var(--accent);" oninput="G('threadsValue').textContent=this.value">
             <span id="threadsValue" style="min-width:30px; text-align:center; font-weight:800; color:var(--accent2); font-size:13px;">5</span>
           </div>
-          <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-            <input type="checkbox" id="autoDownload" checked style="width:auto;">
-            <label for="autoDownload" style="font-size:11px; color:var(--text2); cursor:pointer; margin:0;">💾 Tự động tải SRT khi xong</label>
+          <label class="label">📦 File đồng thời <span class="label-hint">bao nhiêu file chạy cùng lúc</span></label>
+          <div class="duration-row">
+            <input type="range" id="concurrencySlider" min="1" max="10" value="3" style="flex:1; accent-color:var(--green);" oninput="G('concurrencyValue').textContent=this.value">
+            <span id="concurrencyValue" style="min-width:30px; text-align:center; font-weight:800; color:var(--green); font-size:13px;">3</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" id="autoDownload" checked style="width:auto;">
+              <label for="autoDownload" style="font-size:11px; color:var(--text2); cursor:pointer; margin:0;">💾 Tự động tải SRT khi xong</label>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" id="autoRetry" checked style="width:auto;">
+              <label for="autoRetry" style="font-size:11px; color:var(--text2); cursor:pointer; margin:0;">🔄 Tự động thử lại khi lỗi (tối đa 2 lần)</label>
+            </div>
           </div>
         </div>
 
@@ -283,10 +294,11 @@
           <span class="qi-icon">${icon}</span>
           <div class="qi-info">
             <div class="qi-name">${q.name}</div>
-            <div class="qi-status">${formatSize(q.size)}${dur}</div>
+            <div class="qi-status">${formatSize(q.size)}${dur}${q.retries ? ` • retry ${q.retries}` : ''}</div>
             ${q.status === 'running' ? `<div class="qi-progress"><div class="qi-progress-fill" style="width:${q.percent}%"></div></div>` : ''}
           </div>
           <span class="qi-badge ${badgeCls}">${badgeText}</span>
+          ${q.status === 'error' ? `<button class="qi-remove" style="color:var(--orange);font-size:10px;font-weight:700;" onclick="event.stopPropagation();retryFile('${q.id}')">🔄</button>` : ''}
           ${q.status === 'waiting' ? `<button class="qi-remove" onclick="event.stopPropagation();removeFromQueue('${q.id}')">✕</button>` : ''}
         `;
         el.appendChild(div);
@@ -356,26 +368,65 @@
       if (logCollapsed) { logCollapsed = false; G('floatLog').classList.remove('collapsed'); G('logToggle').textContent = '▼'; }
     }
 
-    // ── Queue Processing ──
+    // ── Queue Processing (with concurrency limit + auto-retry) ──
     async function startQueue() {
       const waiting = queue.filter(q => q.status === 'waiting');
       if (!waiting.length || !getKeys().length) return;
+      const concurrency = parseInt(G('concurrencySlider').value) || 3;
       G('btnStart').disabled = true;
-      G('btnStart').textContent = `⏳ Đang xử lý ${waiting.length} file...`;
+      G('btnStart').textContent = `⏳ ${waiting.length} file (${concurrency} đồng thời)...`;
       setBadge('work', `${waiting.length} FILE`);
       logCount = 0; G('logBody').innerHTML = '';
-      addLog(`🚀 Bắt đầu xử lý ${waiting.length} file`, 'accent');
+      addLog(`🚀 Bắt đầu ${waiting.length} file — ${concurrency} đồng thời`, 'accent');
 
-      // Process all files in parallel
-      const promises = waiting.map(item => processFile(item));
-      await Promise.all(promises);
+      // Semaphore-based concurrency
+      let idx = 0;
+      async function runNext() {
+        while (idx < waiting.length) {
+          const item = waiting[idx++];
+          await processFileWithRetry(item);
+        }
+      }
+      const workers = [];
+      for (let i = 0; i < Math.min(concurrency, waiting.length); i++) {
+        workers.push(runNext());
+      }
+      await Promise.all(workers);
 
       const doneCount = queue.filter(q => q.status === 'done').length;
       const errCount = queue.filter(q => q.status === 'error').length;
       setBadge('done', `${doneCount} XONG`);
       G('btnStart').textContent = '🚀 Bắt đầu tách tất cả';
       updateStartBtn();
-      addLog(`🎉 Hoàn tất: ${doneCount} thành công, ${errCount} lỗi`, 'ok');
+      addLog(`🎉 Hoàn tất: ${doneCount} thành công${errCount ? `, ${errCount} lỗi` : ''}`, errCount ? 'warn' : 'ok');
+    }
+
+    async function processFileWithRetry(item) {
+      const maxRetries = G('autoRetry').checked ? 2 : 0;
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        if (attempt > 0) {
+          item.retries = attempt;
+          addLog(`🔄 [${item.name}] Tự động thử lại lần ${attempt}...`, 'warn');
+          await new Promise(r => setTimeout(r, 2000));
+        }
+        await processFile(item);
+        if (item.status === 'done') return;
+        if (item.status === 'error' && attempt < maxRetries) {
+          item.status = 'waiting'; // Reset for retry
+        }
+      }
+    }
+
+    async function retryFile(id) {
+      const item = queue.find(q => q.id === id);
+      if (!item || item.status === 'running') return;
+      addLog(`🔄 [${item.name}] Thử lại thủ công...`, 'accent');
+      item.retries = (item.retries || 0) + 1;
+      setBadge('work', 'RETRY');
+      await processFile(item);
+      const doneCount = queue.filter(q => q.status === 'done').length;
+      setBadge('done', `${doneCount} XONG`);
+      updateStartBtn();
     }
 
     async function processFile(item) {
