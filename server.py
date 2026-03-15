@@ -1,15 +1,14 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import json
 import os
 import sys
 import asyncio
-import base64
 import logging
 import re
 import time
-import math
+import uuid
 import httpx
 
 if sys.stdout.encoding != 'utf-8':
@@ -47,9 +46,31 @@ async def health():
     return {"status": "ok"}
 
 
-# ──────────────────────────────────────────────────────────
-#  Prompt template for Gemini time-range transcription
-# ──────────────────────────────────────────────────────────
+# ── HTTP upload endpoint ──
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    """Fast HTTP multipart upload. Returns session_id for WebSocket."""
+    session_id = str(uuid.uuid4())[:8]
+    ext = os.path.splitext(file.filename)[1].lower()
+    save_name = f"{session_id}{ext}"
+    save_path = os.path.join(TEMP_DIR, save_name)
+
+    size = 0
+    with open(save_path, "wb") as f:
+        while chunk := await file.read(1024 * 1024):  # 1MB chunks
+            f.write(chunk)
+            size += len(chunk)
+
+    logger.info(f"[UPLOAD] {file.filename} → {save_name} ({size / 1048576:.1f} MB)")
+    return {
+        "session_id": session_id,
+        "file_path": save_name,
+        "file_name": file.filename,
+        "size_mb": round(size / 1048576, 1),
+    }
+
+
+# ── Prompt ──
 def make_gemini_prompt(start_mm_ss=None, end_mm_ss=None):
     time_range = ""
     if start_mm_ss and end_mm_ss:
@@ -61,7 +82,7 @@ CRITICAL RULES:
 1. Auto-detect the spoken language. Output transcription in the ORIGINAL spoken language (do NOT translate).
 2. Each subtitle segment should be 1-2 sentences, roughly 3-8 seconds long.
 3. Timestamps MUST be precise — align with actual speech start/end.
-4. Include ALL spoken content in the specified range, do not skip anything.
+4. Include ALL spoken content, do not skip anything.
 5. Output ONLY valid JSON array, no other text.{time_range}
 
 OUTPUT FORMAT (strict JSON):
@@ -71,30 +92,22 @@ OUTPUT FORMAT (strict JSON):
 ]
 
 TIMESTAMP FORMAT: HH:MM:SS,mmm (hours:minutes:seconds,milliseconds)
-- Use commas for milliseconds separator (SRT standard)
-- Be precise — start when speech begins, end when it stops
-
 IMPORTANT: Output ONLY the JSON array. No markdown, no code fences, no explanation."""
 
 
-# ──────────────────────────────────────────────────────────
-#  Parsing helpers
-# ──────────────────────────────────────────────────────────
+# ── Parsing ──
 def parse_srt_json(text: str) -> list:
-    """Parse Gemini response into list of subtitle entries."""
     text = text.strip()
     if text.startswith("```"):
         text = re.sub(r'^```\w*\n?', '', text)
         text = re.sub(r'\n?```$', '', text)
     text = text.strip()
-
     try:
         entries = json.loads(text)
         if isinstance(entries, list):
             return entries
     except json.JSONDecodeError:
         pass
-
     match = re.search(r'\[[\s\S]*\]', text)
     if match:
         try:
@@ -107,7 +120,6 @@ def parse_srt_json(text: str) -> list:
 
 
 def format_timestamp(ts: str) -> str:
-    """Normalize timestamp to SRT format HH:MM:SS,mmm"""
     ts = ts.strip()
     if re.match(r'^\d{2}:\d{2}:\d{2},\d{3}$', ts):
         return ts
@@ -132,7 +144,6 @@ def format_timestamp(ts: str) -> str:
 
 
 def ts_to_seconds(ts: str) -> float:
-    """Convert HH:MM:SS,mmm to seconds."""
     ts = format_timestamp(ts)
     try:
         parts = ts.replace(',', '.').split(':')
@@ -142,14 +153,12 @@ def ts_to_seconds(ts: str) -> float:
 
 
 def seconds_to_mmss(secs: float) -> str:
-    """Convert seconds to MM:SS format for Gemini prompt."""
     m = int(secs // 60)
     s = int(secs % 60)
     return f"{m:02d}:{s:02d}"
 
 
 def entries_to_srt(entries: list) -> str:
-    """Convert entries to SRT format string."""
     lines = []
     for i, entry in enumerate(entries, 1):
         start = format_timestamp(str(entry.get("start", "00:00:00,000")))
@@ -189,23 +198,14 @@ MIME_MAP = {
 }
 
 
-# ──────────────────────────────────────────────────────────
-#  Parse tagged keys: "gemini:AIza..." or "groq:gsk_..."
-# ──────────────────────────────────────────────────────────
 def parse_keys(raw_keys: list) -> list:
-    """Parse keys into [{provider, key, model}] format.
-    Auto-detect provider from key prefix if no tag given.
-    """
     parsed = []
     for raw in raw_keys:
         raw = raw.strip()
         if not raw:
             continue
-
         provider = None
         key = raw
-
-        # Check for explicit tag
         if ':' in raw and not raw.startswith('AIza'):
             tag, k = raw.split(':', 1)
             tag = tag.lower().strip()
@@ -214,29 +214,21 @@ def parse_keys(raw_keys: list) -> list:
                 provider = 'gemini'
             elif tag in ('groq', 'grq', 'q'):
                 provider = 'groq'
-
-        # Auto-detect from key prefix
         if not provider:
             if key.startswith('AIza'):
                 provider = 'gemini'
             elif key.startswith('gsk_'):
                 provider = 'groq'
             else:
-                provider = 'gemini'  # default
-
+                provider = 'gemini'
         parsed.append({"provider": provider, "key": key})
-
     return parsed
 
 
-# ──────────────────────────────────────────────────────────
-#  Groq Whisper transcription
-# ──────────────────────────────────────────────────────────
+# ── Groq Whisper ──
 async def groq_transcribe(file_path: str, api_key: str, model: str = "whisper-large-v3-turbo") -> list:
-    """Transcribe audio using Groq Whisper API. Returns list of entries."""
     mime = MIME_MAP.get(os.path.splitext(file_path)[1].lower(), 'audio/mp3')
     fname = os.path.basename(file_path)
-
     async with httpx.AsyncClient(timeout=300.0) as client:
         with open(file_path, "rb") as f:
             resp = await client.post(
@@ -249,14 +241,11 @@ async def groq_transcribe(file_path: str, api_key: str, model: str = "whisper-la
                 },
                 files={"file": (fname, f, mime)},
             )
-
     if resp.status_code != 200:
         raise Exception(f"Groq API error {resp.status_code}: {resp.text[:200]}")
-
     data = resp.json()
     entries = []
-    segments = data.get("segments", [])
-    for i, seg in enumerate(segments, 1):
+    for i, seg in enumerate(data.get("segments", []), 1):
         start_s = seg.get("start", 0)
         end_s = seg.get("end", 0)
         text = seg.get("text", "").strip()
@@ -272,15 +261,11 @@ async def groq_transcribe(file_path: str, api_key: str, model: str = "whisper-la
     return entries
 
 
-# ──────────────────────────────────────────────────────────
-#  Gemini transcription (single chunk or full)
-# ──────────────────────────────────────────────────────────
+# ── Gemini single chunk ──
 async def gemini_transcribe_chunk(client, uploaded_file, model: str,
                                    start_mm_ss=None, end_mm_ss=None) -> list:
-    """Transcribe a time range of audio using Gemini."""
     prompt = make_gemini_prompt(start_mm_ss, end_mm_ss)
     loop = asyncio.get_event_loop()
-
     response = await loop.run_in_executor(
         None,
         lambda: client.models.generate_content(
@@ -292,21 +277,17 @@ async def gemini_transcribe_chunk(client, uploaded_file, model: str,
     return parse_srt_json(response.text)
 
 
-# ──────────────────────────────────────────────────────────
-#  WebSocket endpoint — main transcription handler
-# ──────────────────────────────────────────────────────────
+# ── WebSocket: processing only (file already uploaded via HTTP) ──
 @app.websocket("/ws/transcribe")
 async def websocket_transcribe(ws: WebSocket):
     await ws.accept()
-    session_id = f"ws_{int(time.time() * 1000)}"
-    temp_path = None
-    logger.info(f"[WS] Session {session_id}: connected")
+    logger.info("[WS] Connected")
 
     try:
         raw = await ws.receive_text()
         config = json.loads(raw)
 
-        file_data_b64 = config.get("file_data", "")
+        file_path_name = config.get("file_path", "")
         file_name = config.get("file_name", "audio.mp3")
         api_keys_raw = config.get("api_keys", [])
         model_name = config.get("model_name", "gemini-2.5-flash")
@@ -314,132 +295,103 @@ async def websocket_transcribe(ws: WebSocket):
         duration_hint = config.get("duration_hint", 0)
         threads_per_key = max(1, min(20, config.get("threads_per_key", 5)))
 
-        if not file_data_b64:
-            await ws.send_json({"type": "error", "message": "No file data received"})
+        temp_path = os.path.join(TEMP_DIR, file_path_name)
+        if not os.path.exists(temp_path):
+            await ws.send_json({"type": "error", "message": "File không tìm thấy. Hãy upload lại."})
             return
+
+        file_size_mb = os.path.getsize(temp_path) / (1024 * 1024)
+
         if not api_keys_raw:
-            await ws.send_json({"type": "error", "message": "No API keys provided"})
+            await ws.send_json({"type": "error", "message": "Chưa có API key"})
             return
 
-        # Decode and save file
-        file_bytes = base64.b64decode(file_data_b64)
-        file_size_mb = len(file_bytes) / (1024 * 1024)
-        ext = os.path.splitext(file_name)[1].lower()
-
-        temp_path = os.path.join(TEMP_DIR, f"{session_id}_{file_name}")
-        with open(temp_path, "wb") as f:
-            f.write(file_bytes)
-
-        await ws.send_json({
-            "type": "progress", "step": "upload",
-            "message": f"📁 File: {file_name} ({file_size_mb:.1f} MB)", "percent": 5
-        })
-
-        # Parse keys
         parsed_keys = parse_keys(api_keys_raw)
         gemini_keys = [k for k in parsed_keys if k["provider"] == "gemini"]
         groq_keys = [k for k in parsed_keys if k["provider"] == "groq"]
         total_workers = len(gemini_keys) * threads_per_key + len(groq_keys)
 
         await ws.send_json({
-            "type": "progress", "step": "keys",
-            "message": f"🔑 {len(gemini_keys)} Gemini (×{threads_per_key}={len(gemini_keys)*threads_per_key}) + {len(groq_keys)} Groq = {total_workers} workers",
-            "percent": 8
+            "type": "progress", "step": "start",
+            "message": f"🚀 {file_name} ({file_size_mb:.1f}MB) — {total_workers} workers",
+            "percent": 5
         })
 
         all_entries = []
         errors = []
 
-        # ─── GROQ WORKERS ───
+        # ─── GROQ (fast, try first) ───
         if groq_keys:
-            await ws.send_json({
-                "type": "progress", "step": "groq",
-                "message": f"⚡ Groq Whisper: {len(groq_keys)} worker(s) đang chạy...",
-                "percent": 15
-            })
-
-            # Groq Whisper: send full file to each key (they're fast, ~10x realtime)
-            # Use first key that succeeds
-            groq_done = False
             for i, gk in enumerate(groq_keys):
-                if groq_done:
-                    break
                 try:
                     await ws.send_json({
                         "type": "worker", "provider": "groq", "worker_id": i + 1,
-                        "status": "running", "message": f"Groq #{i+1} đang transcribe..."
+                        "status": "running", "message": f"Groq #{i+1} transcribing..."
                     })
                     entries = await groq_transcribe(temp_path, gk["key"], groq_model)
                     if entries:
                         all_entries.extend(entries)
-                        groq_done = True
                         await ws.send_json({
                             "type": "worker", "provider": "groq", "worker_id": i + 1,
-                            "status": "done", "message": f"Groq #{i+1}: {len(entries)} segments ✅"
+                            "status": "done", "message": f"Groq #{i+1}: {len(entries)} seg ✅"
                         })
-                        # Stream partial results immediately
                         await ws.send_json({
-                            "type": "partial",
-                            "entries": entries,
-                            "source": f"groq-{i+1}"
+                            "type": "partial", "entries": entries, "source": f"groq-{i+1}"
                         })
+                        break  # Groq succeeded, skip remaining groq keys
                 except Exception as e:
-                    err_msg = str(e)[:100]
-                    errors.append(f"Groq #{i+1}: {err_msg}")
+                    err = str(e)[:100]
+                    errors.append(f"Groq #{i+1}: {err}")
                     await ws.send_json({
                         "type": "worker", "provider": "groq", "worker_id": i + 1,
-                        "status": "error", "message": f"Groq #{i+1}: {err_msg}"
+                        "status": "error", "message": f"Groq #{i+1}: {err}"
                     })
 
-        # ─── GEMINI WORKERS ───
+        # ─── GEMINI (parallel, if Groq failed or no Groq) ───
         if gemini_keys and not all_entries:
-            # Only use Gemini if Groq didn't produce results
             loop = asyncio.get_event_loop()
 
-            # Upload file for EACH unique key (Files API is per-key)
+            # Upload to Gemini with FIRST working key only
             await ws.send_json({
                 "type": "progress", "step": "gemini_upload",
-                "message": f"☁️ Uploading cho {len(gemini_keys)} Gemini keys...", "percent": 15
+                "message": "☁️ Upload lên Gemini...", "percent": 15
             })
 
-            key_clients = {}  # key -> (client, uploaded_file)
+            uploaded_file = None
+            working_client = None
             for ki, kinfo in enumerate(gemini_keys):
                 try:
                     client = genai.Client(api_key=kinfo["key"])
-                    await ws.send_json({
-                        "type": "worker", "provider": "gemini", "worker_id": f"upload-{ki+1}",
-                        "status": "running", "message": f"Upload key #{ki+1}..."
-                    })
                     uf = await loop.run_in_executor(
                         None, lambda c=client: c.files.upload(file=temp_path)
                     )
                     # Wait for ACTIVE
-                    for _ in range(60):
+                    for _ in range(120):
                         fi = await loop.run_in_executor(
                             None, lambda c=client, n=uf.name: c.files.get(name=n)
                         )
                         if fi.state.name == "ACTIVE":
                             break
-                        await asyncio.sleep(3)
-                    key_clients[ki] = (client, uf)
+                        await asyncio.sleep(2)
+                    uploaded_file = uf
+                    working_client = client
+                    logger.info(f"Upload OK with key #{ki+1}")
                     await ws.send_json({
-                        "type": "worker", "provider": "gemini", "worker_id": f"upload-{ki+1}",
-                        "status": "done", "message": f"Upload key #{ki+1} ✅"
+                        "type": "progress", "step": "gemini_ready",
+                        "message": f"✅ Upload xong (key #{ki+1})", "percent": 30
                     })
+                    break
                 except Exception as e:
-                    logger.error(f"Upload failed for key #{ki+1}: {e}")
-                    await ws.send_json({
-                        "type": "worker", "provider": "gemini", "worker_id": f"upload-{ki+1}",
-                        "status": "error", "message": f"Upload key #{ki+1}: {str(e)[:80]}"
-                    })
+                    logger.error(f"Upload failed key #{ki+1}: {e}")
+                    errors.append(f"Upload key #{ki+1}: {str(e)[:80]}")
 
-            if not key_clients:
-                await ws.send_json({"type": "error", "message": "Không upload được file lên Gemini"})
+            if not uploaded_file:
+                await ws.send_json({"type": "error", "message": f"Upload Gemini thất bại: {'; '.join(errors)}"})
                 return
 
-            # Calculate total chunks
-            n_keys_ok = len(key_clients)
-            n_total = n_keys_ok * threads_per_key
+            # Split into chunks — ALL workers use same client (same key)
+            # For billing accounts, single key handles 2000 RPM easily
+            n_total = threads_per_key
             est_duration = duration_hint if duration_hint > 0 else max(60, file_size_mb * 60)
             chunk_secs = est_duration / n_total
 
@@ -450,25 +402,20 @@ async def websocket_transcribe(ws: WebSocket):
                 time_ranges.append((seconds_to_mmss(start), seconds_to_mmss(end)))
 
             await ws.send_json({
-                "type": "progress", "step": "gemini_parallel",
-                "message": f"🚀 {n_total} workers ({n_keys_ok} keys × {threads_per_key} threads) — est. {int(est_duration)}s",
-                "percent": 40
+                "type": "progress", "step": "gemini_go",
+                "message": f"🚀 {n_total} luồng song song — est. {int(est_duration)}s audio",
+                "percent": 35
             })
 
-            # Worker function — uses its assigned key's client + uploaded file
-            key_list = list(key_clients.keys())
-
             async def worker(idx, start_mm, end_mm):
-                assigned_key_idx = key_list[idx % n_keys_ok]
-                client, uf = key_clients[assigned_key_idx]
                 try:
                     await ws.send_json({
                         "type": "worker", "provider": "gemini", "worker_id": idx + 1,
                         "status": "running",
-                        "message": f"G#{idx+1} [K{assigned_key_idx+1}]: {start_mm}→{end_mm}"
+                        "message": f"G#{idx+1}: {start_mm}→{end_mm}"
                     })
                     entries = await gemini_transcribe_chunk(
-                        client, uf, model_name, start_mm, end_mm
+                        working_client, uploaded_file, model_name, start_mm, end_mm
                     )
                     await ws.send_json({
                         "type": "worker", "provider": "gemini", "worker_id": idx + 1,
@@ -483,80 +430,59 @@ async def websocket_transcribe(ws: WebSocket):
                 except Exception as e:
                     err = str(e)[:100]
                     errors.append(f"G#{idx+1}: {err}")
-                    logger.error(f"Worker G#{idx+1} error: {e}")
+                    logger.error(f"Worker G#{idx+1}: {e}")
                     await ws.send_json({
                         "type": "worker", "provider": "gemini", "worker_id": idx + 1,
                         "status": "error", "message": f"G#{idx+1}: {err}"
                     })
                     return []
 
-            # Run all workers in parallel
             tasks = [worker(i, tr[0], tr[1]) for i, tr in enumerate(time_ranges)]
             results = await asyncio.gather(*tasks)
 
             for chunk_entries in results:
                 all_entries.extend(chunk_entries)
 
-            # Cleanup uploaded files
-            for ki, (client, uf) in key_clients.items():
-                try:
-                    await loop.run_in_executor(
-                        None, lambda c=client, n=uf.name: c.files.delete(name=n)
-                    )
-                except:
-                    pass
-
-        elif gemini_keys and all_entries:
-            # Groq already produced results, skip Gemini
-            await ws.send_json({
-                "type": "progress", "step": "skip_gemini",
-                "message": "Groq đã xong, bỏ qua Gemini.", "percent": 80
-            })
+            # Cleanup
+            try:
+                await loop.run_in_executor(
+                    None, lambda: working_client.files.delete(name=uploaded_file.name)
+                )
+            except:
+                pass
 
         if not all_entries:
             await ws.send_json({
                 "type": "error",
-                "message": f"Không tách được phụ đề. Errors: {'; '.join(errors)}"
+                "message": f"Không tách được. Errors: {'; '.join(errors)}"
             })
             return
 
-        # ─── MERGE & DEDUPLICATE ───
-        await ws.send_json({
-            "type": "progress", "step": "merging",
-            "message": f"🔄 Gộp {len(all_entries)} segments, loại bỏ trùng lặp...",
-            "percent": 90
-        })
-
-        # Sort by start timestamp
+        # ─── MERGE ───
         all_entries.sort(key=lambda e: ts_to_seconds(str(e.get("start", "00:00:00,000"))))
-
-        # Remove overlapping/duplicate entries
         merged = []
         for entry in all_entries:
             if not merged:
                 merged.append(entry)
                 continue
-            last = merged[-1]
-            last_end = ts_to_seconds(str(last.get("end", "00:00:00,000")))
+            last_end = ts_to_seconds(str(merged[-1].get("end", "00:00:00,000")))
             curr_start = ts_to_seconds(str(entry.get("start", "00:00:00,000")))
-            # If overlap > 50% of current segment, skip (duplicate)
             curr_end = ts_to_seconds(str(entry.get("end", "00:00:00,000")))
-            curr_duration = curr_end - curr_start
+            curr_dur = curr_end - curr_start
             overlap = max(0, last_end - curr_start)
-            if curr_duration > 0 and overlap / curr_duration > 0.5:
-                continue  # Skip duplicate
+            if curr_dur > 0 and overlap / curr_dur > 0.5:
+                continue
             merged.append(entry)
 
-        # Re-index
-        for i, entry in enumerate(merged, 1):
-            entry["index"] = i
+        for i, e in enumerate(merged, 1):
+            e["index"] = i
 
         srt_content = entries_to_srt(merged)
         language = detect_language_from_entries(merged)
 
         await ws.send_json({
             "type": "progress", "step": "done",
-            "message": f"✅ {len(merged)} phụ đề — {language} — {len(gemini_keys)}G+{len(groq_keys)}Q workers",
+            "message": f"✅ {len(merged)} phụ đề — {language}",
             "percent": 100
         })
 
@@ -572,19 +498,20 @@ async def websocket_transcribe(ws: WebSocket):
         })
 
     except WebSocketDisconnect:
-        logger.info(f"[WS] Session {session_id}: Client disconnected")
+        logger.info("[WS] Client disconnected")
     except Exception as e:
         logger.error(f"[WS] Error: {e}", exc_info=True)
         try:
-            await ws.send_json({"type": "error", "message": str(e)})
+            await ws.send_json({"type": "error", "message": str(e)[:200]})
         except:
             pass
     finally:
-        if temp_path and os.path.exists(temp_path):
-            try:
+        # Cleanup temp file
+        try:
+            if 'temp_path' in dir() and temp_path and os.path.exists(temp_path):
                 os.remove(temp_path)
-            except:
-                pass
+        except:
+            pass
         try:
             await ws.close()
         except:
@@ -597,6 +524,6 @@ if __name__ == "__main__":
     print("  WebSocket: ws://localhost:8000/ws/transcribe")
     uvicorn.run(
         app, host="0.0.0.0", port=8000,
-        ws_max_size=500 * 1024 * 1024,  # 500 MB
+        ws_max_size=500 * 1024 * 1024,
         timeout_keep_alive=300,
     )

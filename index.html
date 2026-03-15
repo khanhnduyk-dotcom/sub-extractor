@@ -7,58 +7,29 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0a0a0f;
-      --bg2: #12121a;
-      --bg3: #1a1a28;
-      --card: #15152a;
-      --border: #2a2a45;
-      --border2: #3a3a55;
-      --text: #e8e8f0;
-      --text2: #a0a0b8;
-      --text3: #6a6a85;
-      --accent: #8b5cf6;
-      --accent2: #a78bfa;
-      --glow: rgba(139, 92, 246, .15);
-      --green: #22c55e;
-      --green-bg: rgba(34, 197, 94, .1);
-      --red: #ef4444;
-      --red-bg: rgba(239, 68, 68, .1);
-      --yellow: #eab308;
-      --yellow-bg: rgba(234, 179, 8, .1);
-      --orange: #f97316;
-      --orange-bg: rgba(249, 115, 22, .1);
-      --r: 12px;
-      --rs: 8px;
-      --font: 'Inter', system-ui, sans-serif;
+      --bg: #0a0a0f; --bg2: #12121a; --bg3: #1a1a28; --card: #15152a;
+      --border: #2a2a45; --border2: #3a3a55;
+      --text: #e8e8f0; --text2: #a0a0b8; --text3: #6a6a85;
+      --accent: #8b5cf6; --accent2: #a78bfa; --glow: rgba(139, 92, 246, .15);
+      --green: #22c55e; --green-bg: rgba(34, 197, 94, .1);
+      --red: #ef4444; --red-bg: rgba(239, 68, 68, .1);
+      --orange: #f97316; --orange-bg: rgba(249, 115, 22, .1);
+      --r: 12px; --font: 'Inter', system-ui, sans-serif;
     }
-
     html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); overflow: hidden; }
-
     button { font-family: inherit; cursor: pointer; border: none; outline: none; }
     input, textarea, select {
       font-family: inherit; outline: none; background: var(--bg); border: 1px solid var(--border);
       color: var(--text); border-radius: 8px; padding: 8px 12px; font-size: 13px; width: 100%; transition: border-color .15s;
     }
     input:focus, textarea:focus, select:focus { border-color: var(--accent); }
-
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-    /* ── Layout ── */
     .app { display: flex; flex-direction: column; height: 100vh; }
-
-    .header {
-      display: flex; align-items: center; gap: 12px; padding: 12px 24px;
-      background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0;
-    }
-    .logo {
-      font-size: 18px; font-weight: 900;
-      background: linear-gradient(135deg, var(--accent), #f472b6);
-      background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
+    .header { display: flex; align-items: center; gap: 12px; padding: 12px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .logo { font-size: 18px; font-weight: 900; background: linear-gradient(135deg, var(--accent), #f472b6); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .logo-sub { font-size: 11px; color: var(--text3); margin-left: 4px; }
     .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
     .badge { font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
@@ -66,81 +37,42 @@
     .badge-work { background: var(--glow); color: var(--accent2); animation: pulse 2s infinite; }
     .badge-done { background: var(--green-bg); color: var(--green); }
     .badge-err { background: var(--red-bg); color: var(--red); }
-
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
-
     .main { flex: 1; display: flex; overflow: hidden; }
-
-    /* ── Sidebar ── */
-    .sidebar {
-      width: 380px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border);
-      overflow-y: auto; display: flex; flex-direction: column;
-    }
+    .sidebar { width: 380px; flex-shrink: 0; background: var(--bg2); border-right: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
     .section { padding: 16px; border-bottom: 1px solid var(--border); }
-    .section-title {
-      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
-      color: var(--text3); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-    }
-    .section-num {
-      width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff;
-      font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
+    .section-title { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .section-num { width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .section-num.done { background: var(--green); }
-
     .label { font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 5px; display: block; margin-top: 10px; }
     .label:first-child { margin-top: 0; }
     .label-hint { font-weight: 400; color: var(--text3); }
 
-    /* ── Dropzone ── */
-    .dropzone {
-      border: 2px dashed var(--border); border-radius: var(--r); padding: 32px 16px;
-      text-align: center; cursor: pointer; transition: all .2s; position: relative;
-    }
+    .dropzone { border: 2px dashed var(--border); border-radius: var(--r); padding: 32px 16px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
     .dropzone:hover, .dropzone.active { border-color: var(--accent); background: var(--glow); }
     .dropzone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
     .dz-icon { font-size: 36px; margin-bottom: 8px; }
     .dz-text { font-size: 14px; font-weight: 600; color: var(--text2); }
     .dz-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
-
-    .file-info {
-      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
-      background: var(--glow); border: 1px solid rgba(139, 92, 246, .2); border-radius: 8px; margin-top: 10px;
-    }
+    .file-info { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--glow); border: 1px solid rgba(139, 92, 246, .2); border-radius: 8px; margin-top: 10px; }
     .file-info-icon { font-size: 20px; }
     .file-info-name { font-size: 12px; font-weight: 700; color: var(--accent2); flex: 1; word-break: break-all; }
     .file-info-size { font-size: 10px; color: var(--text3); }
     .file-info-rm { background: none; color: var(--text3); padding: 2px 6px; border-radius: 4px; font-size: 14px; }
     .file-info-rm:hover { color: var(--red); }
 
-    /* ── Keys textarea ── */
-    .keys-textarea {
-      font-family: 'Consolas', monospace; font-size: 11px; line-height: 1.6;
-      min-height: 65px; resize: vertical; padding: 8px 10px;
-    }
-    .key-count {
-      display: flex; gap: 8px; margin-top: 6px; font-size: 10px; font-weight: 700;
-    }
+    .keys-textarea { font-family: 'Consolas', monospace; font-size: 11px; line-height: 1.6; min-height: 65px; resize: vertical; padding: 8px 10px; }
+    .key-count { display: flex; gap: 8px; margin-top: 6px; font-size: 10px; font-weight: 700; }
     .key-count-gem { color: var(--accent2); background: var(--glow); padding: 2px 8px; border-radius: 10px; }
     .key-count-groq { color: var(--orange); background: var(--orange-bg); padding: 2px 8px; border-radius: 10px; }
-
-    /* ── Model selects row ── */
     .model-row { display: flex; gap: 8px; margin-top: 6px; }
     .model-row select { flex: 1; font-size: 11px; padding: 6px 8px; }
-
-    /* ── Duration ── */
     .duration-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
     .duration-input { width: 80px; text-align: center; font-size: 12px; font-weight: 700; }
     .duration-label { font-size: 11px; color: var(--text3); }
 
-    /* ── Buttons ── */
-    .btn {
-      padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 700;
-      transition: all .15s; letter-spacing: .2px; width: 100%;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #7c3aed); color: #fff;
-      box-shadow: 0 4px 15px rgba(139, 92, 246, .3);
-    }
+    .btn { padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 700; transition: all .15s; letter-spacing: .2px; width: 100%; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), #7c3aed); color: #fff; box-shadow: 0 4px 15px rgba(139, 92, 246, .3); }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(139, 92, 246, .4); }
     .btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
     .btn-secondary { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
@@ -148,107 +80,53 @@
     .btn-success { background: var(--green); color: #fff; }
     .btn-success:hover { opacity: .85; }
 
-    /* ── Progress ── */
     .progress-area { display: none; margin-top: 12px; }
-    .progress-bar {
-      width: 100%; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin: 6px 0;
-    }
-    .progress-fill {
-      height: 100%; background: linear-gradient(90deg, var(--accent), #f472b6);
-      border-radius: 3px; transition: width .4s ease; width: 0%;
-    }
+    .progress-bar { width: 100%; height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin: 6px 0; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #f472b6); border-radius: 3px; transition: width .3s ease; width: 0%; }
     .progress-text { display: flex; justify-content: space-between; font-size: 11px; color: var(--text2); font-weight: 600; }
 
-    /* ── Worker Status ── */
-    .workers-area { margin-top: 10px; }
-    .worker-row {
-      display: flex; align-items: center; gap: 8px; padding: 5px 8px; margin: 3px 0;
-      border-radius: 6px; font-size: 11px; font-weight: 600; transition: all .2s;
-    }
+    .workers-area { margin-top: 10px; max-height: 200px; overflow-y: auto; }
+    .worker-row { display: flex; align-items: center; gap: 8px; padding: 4px 8px; margin: 2px 0; border-radius: 6px; font-size: 11px; font-weight: 600; transition: all .2s; }
     .worker-row.running { background: var(--glow); color: var(--accent2); }
     .worker-row.done { background: var(--green-bg); color: var(--green); }
     .worker-row.error { background: var(--red-bg); color: var(--red); }
-    .worker-dot {
-      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; transition: background .2s;
-    }
+    .worker-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
     .worker-row.running .worker-dot { background: var(--accent); animation: pulse 1s infinite; }
     .worker-row.done .worker-dot { background: var(--green); }
     .worker-row.error .worker-dot { background: var(--red); }
-    .worker-tag {
-      font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px;
-      text-transform: uppercase; flex-shrink: 0;
-    }
+    .worker-tag { font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; text-transform: uppercase; flex-shrink: 0; }
     .worker-tag.gemini { background: var(--glow); color: var(--accent2); }
     .worker-tag.groq { background: var(--orange-bg); color: var(--orange); }
     .worker-msg { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    /* ── Editor Panel ── */
     .editor { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-    .editor-header {
-      display: flex; align-items: center; gap: 12px; padding: 10px 20px;
-      background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0;
-    }
+    .editor-header { display: flex; align-items: center; gap: 12px; padding: 10px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .editor-title { font-size: 12px; font-weight: 700; color: var(--text2); }
     .editor-info { font-size: 11px; color: var(--text3); margin-left: auto; }
-
-    .editor-toolbar {
-      display: flex; align-items: center; gap: 8px; padding: 8px 20px;
-      background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0;
-    }
-    .toolbar-btn {
-      padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700;
-      background: var(--bg3); color: var(--text2); border: 1px solid var(--border); transition: all .15s;
-    }
+    .editor-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 20px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .toolbar-btn { padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; background: var(--bg3); color: var(--text2); border: 1px solid var(--border); transition: all .15s; }
     .toolbar-btn:hover { border-color: var(--accent); color: var(--accent2); background: var(--glow); }
 
-    /* ── Subtitle Table ── */
-    .sub-header {
-      display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg2);
-    }
-    .sub-header-col {
-      padding: 8px 14px; font-size: 9px; font-weight: 800; text-transform: uppercase;
-      letter-spacing: 1px; color: var(--text3);
-    }
+    .sub-header { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg2); }
+    .sub-header-col { padding: 8px 14px; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); }
     .col-idx { width: 50px; text-align: center; border-right: 1px solid var(--border); }
     .col-time { width: 220px; border-right: 1px solid var(--border); }
     .col-text { flex: 1; }
-
     .sub-list { flex: 1; overflow-y: auto; }
     .sub-row { display: flex; border-bottom: 1px solid var(--border); transition: background .1s; }
     .sub-row:hover { background: var(--bg3); }
     .sub-cell { padding: 10px 14px; font-size: 13px; line-height: 1.6; }
-    .sub-cell.col-idx {
-      width: 50px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text3);
-      border-right: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
-    }
-    .sub-cell.col-time {
-      width: 220px; border-right: 1px solid var(--border); font-family: 'Consolas', monospace;
-      font-size: 11px; color: var(--accent2); display: flex; align-items: center;
-    }
+    .sub-cell.col-idx { width: 50px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text3); border-right: 1px solid var(--border); display: flex; align-items: center; justify-content: center; }
+    .sub-cell.col-time { width: 220px; border-right: 1px solid var(--border); font-family: 'Consolas', monospace; font-size: 11px; color: var(--accent2); display: flex; align-items: center; }
     .sub-cell.col-text { flex: 1; }
-    .sub-textarea {
-      background: transparent; border: none; color: var(--text); font-size: 13px; line-height: 1.6;
-      width: 100%; resize: none; font-family: var(--font); padding: 0;
-    }
+    .sub-textarea { background: transparent; border: none; color: var(--text); font-size: 13px; line-height: 1.6; width: 100%; resize: none; font-family: var(--font); padding: 0; }
     .sub-textarea:focus { outline: none; background: var(--glow); border-radius: 4px; padding: 4px; margin: -4px; }
 
-    /* ── Empty State ── */
-    .empty-state {
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      color: var(--text3); gap: 12px;
-    }
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text3); gap: 12px; }
     .empty-icon { font-size: 64px; opacity: .3; }
     .empty-text { font-size: 16px; font-weight: 600; }
     .empty-sub { font-size: 12px; }
-
-    /* ── Status Bar ── */
-    .statusbar {
-      display: flex; align-items: center; gap: 12px; padding: 6px 20px;
-      background: var(--bg2); border-top: 1px solid var(--border); flex-shrink: 0;
-      font-size: 11px; color: var(--text3);
-    }
-
+    .statusbar { display: flex; align-items: center; gap: 12px; padding: 6px 20px; background: var(--bg2); border-top: 1px solid var(--border); flex-shrink: 0; font-size: 11px; color: var(--text3); }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in { animation: fadeIn .3s ease; }
   </style>
@@ -263,66 +141,36 @@
         <span id="badge" class="badge badge-idle">SẴN SÀNG</span>
       </div>
     </div>
-
     <div class="main">
       <div class="sidebar">
-        <!-- Step 1: Upload -->
         <div class="section">
-          <div class="section-title">
-            <div class="section-num" id="stepNum1">1</div>
-            CHỌN FILE AUDIO / VIDEO
-          </div>
+          <div class="section-title"><div class="section-num" id="stepNum1">1</div> CHỌN FILE AUDIO / VIDEO</div>
           <div class="dropzone" id="dropzone">
             <input type="file" id="fileInput" accept=".mp3,.wav,.aac,.ogg,.flac,.aiff,.m4a,.mp4,.mkv,.webm,.mov">
             <div class="dz-icon">🎵</div>
             <div class="dz-text">Kéo thả file vào đây</div>
-            <div class="dz-sub">MP3, WAV, AAC, OGG, FLAC, MP4, MKV, WebM</div>
+            <div class="dz-sub">MP3, WAV, OGG, FLAC, MP4, MKV, WebM — tối đa 2GB</div>
           </div>
           <div id="fileInfoArea" style="display:none;">
-            <div class="file-info" id="fileInfo">
-              <span class="file-info-icon">🎵</span>
-              <span class="file-info-name" id="fileName"></span>
-              <span class="file-info-size" id="fileSize"></span>
-              <button class="file-info-rm" onclick="clearFile()">✕</button>
-            </div>
+            <div class="file-info"><span class="file-info-icon">🎵</span><span class="file-info-name" id="fileName"></span><span class="file-info-size" id="fileSize"></span><button class="file-info-rm" onclick="clearFile()">✕</button></div>
           </div>
-          <label class="label" style="margin-top:10px;">⏱️ Thời lượng (giây) <span class="label-hint">— giúp chia luồng chính xác</span></label>
+          <label class="label" style="margin-top:10px;">⏱️ Thời lượng (giây) <span class="label-hint">— để trống = tự ước lượng</span></label>
           <div class="duration-row">
             <input class="duration-input" type="number" id="durationInput" placeholder="auto" min="0" step="1">
-            <span class="duration-label">giây (để trống = tự ước lượng)</span>
+            <span class="duration-label">giây</span>
           </div>
         </div>
 
-        <!-- Step 2: API Keys -->
         <div class="section">
-          <div class="section-title">
-            <div class="section-num" id="stepNum2">2</div>
-            API KEYS — NHIỀU KEY = NHIỀU LUỒNG
-          </div>
-          <label class="label">🔑 Dán API keys <span class="label-hint">— mỗi dòng 1 key, tự nhận dạng Gemini/Groq</span></label>
-          <textarea class="keys-textarea" id="apiKeys" rows="4"
-            placeholder="AIzaSy... (Gemini key)&#10;gsk_abc... (Groq key)&#10;AIzaSy... (thêm Gemini key)&#10;&#10;Tự nhận dạng: AIza = Gemini, gsk_ = Groq"></textarea>
+          <div class="section-title"><div class="section-num" id="stepNum2">2</div> API KEYS</div>
+          <label class="label">🔑 Dán API keys <span class="label-hint">— mỗi dòng 1 key</span></label>
+          <textarea class="keys-textarea" id="apiKeys" rows="4" placeholder="AIzaSy... (Gemini)&#10;gsk_abc... (Groq)&#10;&#10;AIza = Gemini, gsk_ = Groq"></textarea>
           <div class="key-count" id="keyCount"></div>
-
           <div class="model-row">
-            <div style="flex:1;">
-              <label class="label">🤖 Gemini Model</label>
-              <select id="geminiModel">
-                <option value="gemini-2.5-flash">⚡ 2.5 Flash</option>
-                <option value="gemini-2.5-pro">🧠 2.5 Pro</option>
-                <option value="gemini-2.0-flash">⚡ 2.0 Flash</option>
-              </select>
-            </div>
-            <div style="flex:1;">
-              <label class="label">🎤 Groq Model</label>
-              <select id="groqModel">
-                <option value="whisper-large-v3-turbo">⚡ Whisper Turbo</option>
-                <option value="whisper-large-v3">🧠 Whisper v3</option>
-              </select>
-            </div>
+            <div style="flex:1;"><label class="label">🤖 Gemini</label><select id="geminiModel"><option value="gemini-2.5-flash">⚡ 2.5 Flash</option><option value="gemini-2.5-pro">🧠 2.5 Pro</option><option value="gemini-2.0-flash">⚡ 2.0 Flash</option></select></div>
+            <div style="flex:1;"><label class="label">🎤 Groq</label><select id="groqModel"><option value="whisper-large-v3-turbo">⚡ Turbo</option><option value="whisper-large-v3">🧠 v3</option></select></div>
           </div>
-
-          <label class="label">🚀 Luồng/key Gemini <span class="label-hint">— nhiều luồng = nhanh hơn</span></label>
+          <label class="label">🚀 Luồng song song <span class="label-hint">— chia audio thành N đoạn</span></label>
           <div class="duration-row">
             <input type="range" id="threadsSlider" min="1" max="20" value="5" style="flex:1; accent-color:var(--accent);" oninput="updateThreadsDisplay()">
             <span id="threadsValue" style="min-width:35px; text-align:center; font-weight:800; color:var(--accent2); font-size:14px;">5</span>
@@ -330,47 +178,26 @@
           <div id="totalWorkers" style="font-size:10px; color:var(--text3); margin-top:3px;"></div>
         </div>
 
-        <!-- Step 3: Action -->
         <div class="section">
-          <div class="section-title">
-            <div class="section-num" id="stepNum3">3</div>
-            TÁCH PHỤ ĐỀ
-          </div>
-          <button class="btn btn-primary" id="btnStart" onclick="startTranscription()" disabled>
-            🚀 Bắt đầu tách phụ đề song song
-          </button>
+          <div class="section-title"><div class="section-num" id="stepNum3">3</div> TÁCH PHỤ ĐỀ</div>
+          <button class="btn btn-primary" id="btnStart" onclick="startTranscription()" disabled>🚀 Bắt đầu tách phụ đề</button>
           <div class="progress-area" id="progressArea">
             <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-            <div class="progress-text">
-              <span id="progressLabel">Đang xử lý...</span>
-              <span id="progressPercent">0%</span>
-            </div>
+            <div class="progress-text"><span id="progressLabel">...</span><span id="progressPercent">0%</span></div>
             <div class="workers-area" id="workersArea"></div>
           </div>
         </div>
 
-        <!-- Step 4: Download -->
         <div class="section" id="downloadSection" style="display:none;">
-          <div class="section-title">
-            <div class="section-num done">✓</div>
-            TẢI VỀ
-          </div>
+          <div class="section-title"><div class="section-num done">✓</div> TẢI VỀ</div>
           <button class="btn btn-success" onclick="downloadSRT()">💾 Tải file SRT</button>
-          <button class="btn btn-secondary" style="margin-top:6px;" onclick="copySRT()">📋 Copy nội dung SRT</button>
+          <button class="btn btn-secondary" style="margin-top:6px;" onclick="copySRT()">📋 Copy SRT</button>
         </div>
       </div>
 
-      <!-- Editor -->
       <div class="editor">
-        <div class="editor-header">
-          <span class="editor-title">📝 Phụ đề</span>
-          <span class="editor-info" id="editorInfo"></span>
-        </div>
-        <div class="empty-state" id="emptyState">
-          <div class="empty-icon">🎧</div>
-          <div class="empty-text">Chưa có phụ đề</div>
-          <div class="empty-sub">Upload file → dán API keys → nhấn "Tách phụ đề" để bắt đầu</div>
-        </div>
+        <div class="editor-header"><span class="editor-title">📝 Phụ đề</span><span class="editor-info" id="editorInfo"></span></div>
+        <div class="empty-state" id="emptyState"><div class="empty-icon">🎧</div><div class="empty-text">Chưa có phụ đề</div><div class="empty-sub">Upload file → dán key → Tách phụ đề</div></div>
         <div id="subtitleArea" style="display:none; flex-direction:column; overflow:hidden;">
           <div class="editor-toolbar">
             <button class="toolbar-btn" onclick="downloadSRT()">💾 Tải SRT</button>
@@ -385,364 +212,176 @@
         </div>
       </div>
     </div>
-
-    <div class="statusbar">
-      <span id="statusText">Sẵn sàng</span>
-    </div>
+    <div class="statusbar"><span id="statusText">Sẵn sàng</span></div>
   </div>
 
   <script>
-    let selectedFile = null;
-    let srtContent = '';
-    let srtEntries = [];
-    let srtFileName = 'output.srt';
-    let ws = null;
-
+    let selectedFile = null, srtContent = '', srtEntries = [], srtFileName = 'output.srt', ws = null, streamIdx = 0;
     const G = id => document.getElementById(id);
 
-    // ── File handling ──
-    const dropzone = G('dropzone');
-    const fileInput = G('fileInput');
+    // ── File ──
+    const dropzone = G('dropzone'), fileInput = G('fileInput');
     dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('active'); });
     dropzone.addEventListener('dragleave', () => dropzone.classList.remove('active'));
-    dropzone.addEventListener('drop', e => {
-      e.preventDefault(); dropzone.classList.remove('active');
-      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-    });
+    dropzone.addEventListener('drop', e => { e.preventDefault(); dropzone.classList.remove('active'); if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
     fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
 
     function handleFile(file) {
       const ext = file.name.split('.').pop().toLowerCase();
-      const allowed = ['mp3','wav','aac','ogg','flac','aiff','m4a','mp4','mkv','webm','mov'];
-      if (!allowed.includes(ext)) {
-        setStatus('❌ File không hỗ trợ');
-        return;
-      }
+      if (!['mp3','wav','aac','ogg','flac','aiff','m4a','mp4','mkv','webm','mov'].includes(ext)) { setStatus('❌ File không hỗ trợ'); return; }
       selectedFile = file;
       G('fileName').textContent = file.name;
       G('fileSize').textContent = formatSize(file.size);
       G('fileInfoArea').style.display = '';
       dropzone.style.display = 'none';
-      G('stepNum1').classList.add('done');
-      G('stepNum1').textContent = '✓';
-      updateStartBtn();
-      setStatus(`📁 ${file.name}`);
-    }
-
-    function clearFile() {
-      selectedFile = null;
-      G('fileInfoArea').style.display = 'none';
-      dropzone.style.display = '';
-      G('stepNum1').classList.remove('done');
-      G('stepNum1').textContent = '1';
-      fileInput.value = '';
+      G('stepNum1').classList.add('done'); G('stepNum1').textContent = '✓';
       updateStartBtn();
     }
 
-    function formatSize(bytes) {
-      if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-      return (bytes / 1048576).toFixed(1) + ' MB';
-    }
+    function clearFile() { selectedFile = null; G('fileInfoArea').style.display = 'none'; dropzone.style.display = ''; G('stepNum1').classList.remove('done'); G('stepNum1').textContent = '1'; fileInput.value = ''; updateStartBtn(); }
+    function formatSize(b) { return b < 1024 ? b+' B' : b < 1048576 ? (b/1024).toFixed(1)+' KB' : (b/1048576).toFixed(1)+' MB'; }
 
-    // ── API Keys ──
+    // ── Keys ──
     const keysEl = G('apiKeys');
-    keysEl.addEventListener('input', () => {
-      updateKeyCount();
-      updateStartBtn();
-      localStorage.setItem('subex_keys', keysEl.value);
-    });
-
-    const savedKeys = localStorage.getItem('subex_keys');
-    if (savedKeys) keysEl.value = savedKeys;
-
-    function getKeys() {
-      return keysEl.value.split('\n').map(k => k.trim()).filter(k => k && !k.startsWith('//'));
-    }
-
+    keysEl.addEventListener('input', () => { updateKeyCount(); updateStartBtn(); localStorage.setItem('subex_keys', keysEl.value); });
+    const saved = localStorage.getItem('subex_keys'); if (saved) keysEl.value = saved;
+    function getKeys() { return keysEl.value.split('\n').map(k => k.trim()).filter(k => k && !k.startsWith('//')); }
     function updateKeyCount() {
-      const keys = getKeys();
-      let gem = 0, groq = 0;
-      keys.forEach(k => {
-        if (k.startsWith('gsk_') || k.toLowerCase().startsWith('groq:')) groq++;
-        else gem++;
-      });
-      const el = G('keyCount');
-      if (keys.length === 0) {
-        el.innerHTML = '';
-        G('totalWorkers').textContent = '';
-      } else {
-        const tpk = parseInt(G('threadsSlider').value) || 5;
-        const totalW = gem * tpk + groq;
-        el.innerHTML = `
-          ${gem > 0 ? `<span class="key-count-gem">🟣 ${gem} Gemini ×${tpk}</span>` : ''}
-          ${groq > 0 ? `<span class="key-count-groq">🟠 ${groq} Groq</span>` : ''}
-        `;
-        G('totalWorkers').textContent = `Tổng: ${totalW} workers song song`;
-      }
+      const keys = getKeys(); let gem = 0, groq = 0;
+      keys.forEach(k => { if (k.startsWith('gsk_') || k.toLowerCase().startsWith('groq:')) groq++; else gem++; });
+      const el = G('keyCount'), tpk = parseInt(G('threadsSlider').value) || 5;
+      if (!keys.length) { el.innerHTML = ''; G('totalWorkers').textContent = ''; }
+      else { el.innerHTML = `${gem ? `<span class="key-count-gem">🟣 ${gem} Gemini</span>` : ''}${groq ? `<span class="key-count-groq">🟠 ${groq} Groq</span>` : ''}`; G('totalWorkers').textContent = `→ ${tpk} luồng song song`; }
     }
     updateKeyCount();
-
-    function updateThreadsDisplay() {
-      const v = G('threadsSlider').value;
-      G('threadsValue').textContent = v;
-      updateKeyCount();
-    }
-
-    function updateStartBtn() {
-      G('btnStart').disabled = !(selectedFile && getKeys().length > 0);
-    }
+    function updateThreadsDisplay() { G('threadsValue').textContent = G('threadsSlider').value; updateKeyCount(); }
+    function updateStartBtn() { G('btnStart').disabled = !(selectedFile && getKeys().length > 0); }
     updateStartBtn();
 
-    // ── Transcription ──
+    // ── Main Flow: HTTP upload → WebSocket process ──
     async function startTranscription() {
-      if (!selectedFile || getKeys().length === 0) return;
-
+      if (!selectedFile || !getKeys().length) return;
       const btn = G('btnStart');
-      btn.disabled = true;
-      btn.textContent = '⏳ Đang xử lý...';
-      setBadge('work', 'ĐANG TÁCH...');
-      G('progressArea').style.display = '';
-      G('workersArea').innerHTML = '';
-      setProgress(0, 'Đang đọc file...');
+      btn.disabled = true; btn.textContent = '⏳ Uploading...';
+      setBadge('work', 'UPLOADING');
+      G('progressArea').style.display = ''; G('workersArea').innerHTML = '';
+      srtEntries = []; srtContent = ''; streamIdx = 0;
+      G('subList').innerHTML = ''; G('emptyState').style.display = 'none';
+      G('subtitleArea').style.display = 'flex'; G('editorInfo').textContent = '⏳ Uploading...';
 
-      // Clear and show subtitle area for streaming
-      srtEntries = [];
-      srtContent = '';
-      G('subList').innerHTML = '';
-      G('emptyState').style.display = 'none';
-      G('subtitleArea').style.display = 'flex';
-      G('editorInfo').textContent = '⏳ Đang tách...';
-      streamIdx = 0;
+      // Step 1: HTTP upload with progress
+      setProgress(0, '📤 Uploading file...');
+      try {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
 
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        const base64 = e.target.result.split(',')[1];
-        setProgress(5, 'Đang kết nối...');
-
-        const loc = window.location;
-        const wsProto = loc.protocol === 'https:' ? 'wss://' : 'ws://';
-        const wsHost = loc.host || 'localhost:8000';
-        const wsUrl = wsProto + wsHost + '/ws/transcribe';
-
-        try {
-          ws = new WebSocket(wsUrl);
-
-          ws.onopen = () => {
-            const duration = parseInt(G('durationInput').value) || 0;
-            ws.send(JSON.stringify({
-              file_data: base64,
-              file_name: selectedFile.name,
-              api_keys: getKeys(),
-              model_name: G('geminiModel').value,
-              groq_model: G('groqModel').value,
-              duration_hint: duration,
-              threads_per_key: parseInt(G('threadsSlider').value) || 5,
-            }));
-            setProgress(8, 'File đã gửi...');
+        const uploadResult = await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', '/upload');
+          xhr.onload = () => {
+            if (xhr.status === 200) resolve(JSON.parse(xhr.responseText));
+            else reject(new Error(`Upload failed: ${xhr.status}`));
           };
-
-          ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-
-            if (data.type === 'progress') {
-              setProgress(data.percent || 0, data.message || '');
-            } else if (data.type === 'worker') {
-              updateWorker(data);
-            } else if (data.type === 'partial') {
-              handlePartial(data);
-            } else if (data.type === 'result') {
-              handleResult(data);
-            } else if (data.type === 'error') {
-              setStatus('❌ ' + data.message);
-              setBadge('err', 'LỖI');
-              btn.disabled = false;
-              btn.textContent = '🚀 Bắt đầu tách phụ đề song song';
+          xhr.onerror = () => reject(new Error('Upload network error'));
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              const pct = Math.round(e.loaded / e.total * 100);
+              setProgress(pct * 0.3, `📤 Uploading... ${pct}% (${formatSize(e.loaded)} / ${formatSize(e.total)})`);
             }
           };
+          xhr.send(formData);
+        });
 
-          ws.onerror = () => {
-            setStatus('❌ Không thể kết nối server');
-            setBadge('err', 'LỖI');
-            btn.disabled = false;
-            btn.textContent = '🚀 Bắt đầu tách phụ đề song song';
-            G('progressArea').style.display = 'none';
-          };
+        setProgress(30, `✅ Upload xong! (${uploadResult.size_mb} MB)`);
+        btn.textContent = '⏳ Đang tách...';
+        setBadge('work', 'ĐANG TÁCH...');
+        G('editorInfo').textContent = '⏳ Đang tách...';
 
-          ws.onclose = () => { ws = null; };
-        } catch (err) {
-          setStatus('❌ ' + err.message);
-          btn.disabled = false;
-          btn.textContent = '🚀 Bắt đầu tách phụ đề song song';
-          G('progressArea').style.display = 'none';
-        }
-      };
-      reader.readAsDataURL(selectedFile);
+        // Step 2: WebSocket for processing
+        const loc = window.location;
+        const wsUrl = (loc.protocol === 'https:' ? 'wss://' : 'ws://') + (loc.host || 'localhost:8000') + '/ws/transcribe';
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          ws.send(JSON.stringify({
+            file_path: uploadResult.file_path,
+            file_name: selectedFile.name,
+            api_keys: getKeys(),
+            model_name: G('geminiModel').value,
+            groq_model: G('groqModel').value,
+            duration_hint: parseInt(G('durationInput').value) || 0,
+            threads_per_key: parseInt(G('threadsSlider').value) || 5,
+          }));
+        };
+
+        ws.onmessage = (e) => {
+          const data = JSON.parse(e.data);
+          if (data.type === 'progress') setProgress(30 + (data.percent || 0) * 0.7, data.message);
+          else if (data.type === 'worker') updateWorker(data);
+          else if (data.type === 'partial') handlePartial(data);
+          else if (data.type === 'result') handleResult(data);
+          else if (data.type === 'error') { setStatus('❌ ' + data.message); setBadge('err', 'LỖI'); btn.disabled = false; btn.textContent = '🚀 Bắt đầu tách phụ đề'; }
+        };
+        ws.onerror = () => { setStatus('❌ WebSocket error'); setBadge('err', 'LỖI'); btn.disabled = false; btn.textContent = '🚀 Bắt đầu tách phụ đề'; };
+        ws.onclose = () => { ws = null; };
+      } catch (err) {
+        setStatus('❌ ' + err.message); setBadge('err', 'LỖI');
+        btn.disabled = false; btn.textContent = '🚀 Bắt đầu tách phụ đề';
+      }
     }
 
     function updateWorker(data) {
       const area = G('workersArea');
-      let rowId = `worker-${data.provider}-${data.worker_id}`;
-      let row = document.getElementById(rowId);
-      if (!row) {
-        row = document.createElement('div');
-        row.id = rowId;
-        row.className = 'worker-row fade-in';
-        area.appendChild(row);
-      }
+      let id = `w-${data.provider}-${data.worker_id}`, row = document.getElementById(id);
+      if (!row) { row = document.createElement('div'); row.id = id; row.className = 'worker-row fade-in'; area.appendChild(row); }
       row.className = `worker-row ${data.status}`;
-      const tagClass = data.provider === 'groq' ? 'groq' : 'gemini';
-      const icon = data.status === 'done' ? '✅' : data.status === 'error' ? '❌' : '⏳';
-      row.innerHTML = `
-        <div class="worker-dot"></div>
-        <span class="worker-tag ${tagClass}">${data.provider}</span>
-        <span class="worker-msg">${icon} ${data.message || ''}</span>
-      `;
+      const tag = data.provider === 'groq' ? 'groq' : 'gemini';
+      row.innerHTML = `<div class="worker-dot"></div><span class="worker-tag ${tag}">${data.provider}</span><span class="worker-msg">${data.message || ''}</span>`;
     }
 
-    let streamIdx = 0;
-
     function handlePartial(data) {
-      const entries = data.entries || [];
       const list = G('subList');
-
-      entries.forEach((entry, i) => {
+      (data.entries || []).forEach((entry, i) => {
         streamIdx++;
         const row = document.createElement('div');
-        row.className = 'sub-row fade-in';
-        row.style.animationDelay = Math.min(i * 30, 300) + 'ms';
-
-        const start = entry.start || '00:00:00,000';
-        const end = entry.end || '00:00:00,000';
-
-        row.innerHTML = `
-          <div class="sub-cell col-idx">${streamIdx}</div>
-          <div class="sub-cell col-time">${start} → ${end}</div>
-          <div class="sub-cell col-text">
-            <textarea class="sub-textarea" rows="1" readonly>${entry.text || ''}</textarea>
-          </div>
-        `;
+        row.className = 'sub-row fade-in'; row.style.animationDelay = Math.min(i * 20, 200) + 'ms';
+        row.innerHTML = `<div class="sub-cell col-idx">${streamIdx}</div><div class="sub-cell col-time">${entry.start || ''} → ${entry.end || ''}</div><div class="sub-cell col-text"><textarea class="sub-textarea" rows="1" readonly>${entry.text || ''}</textarea></div>`;
         list.appendChild(row);
-
-        // Auto-resize & scroll into view
-        setTimeout(() => {
-          const ta = row.querySelector('.sub-textarea');
-          if (ta) autoResize(ta);
-          row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 20);
+        setTimeout(() => { const ta = row.querySelector('.sub-textarea'); if (ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; } row.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 20);
       });
-
-      G('editorInfo').textContent = `⏳ ${streamIdx} segments (đang tách...)`;
-      setStatus(`⏳ Đã tách ${streamIdx} segments... [${data.source || ''}]`);
+      G('editorInfo').textContent = `⏳ ${streamIdx} segments...`;
     }
 
     function handleResult(data) {
-      srtContent = data.srt;
-      srtEntries = data.entries;
-      srtFileName = data.file_name;
-      const language = data.language;
-      const total = data.total_segments;
-      const workers = data.workers_used || 1;
-
-      G('langBadge').textContent = '🌐 ' + language;
-      G('langBadge').style.display = '';
-
+      srtContent = data.srt; srtEntries = data.entries; srtFileName = data.file_name;
+      G('langBadge').textContent = '🌐 ' + data.language; G('langBadge').style.display = '';
       setBadge('done', 'HOÀN TẤT');
-      setProgress(100, `✅ ${total} phụ đề — ${language} — ${workers} workers`);
-      setStatus(`✅ ${total} phụ đề — ${language}`);
-      G('editorInfo').textContent = `${total} segments • ${language} • ${workers} workers`;
-
-      G('downloadSection').style.display = '';
-      G('stepNum3').classList.add('done');
-      G('stepNum3').textContent = '✓';
-
+      setProgress(100, `✅ ${data.total_segments} phụ đề — ${data.language}`);
+      G('editorInfo').textContent = `${data.total_segments} seg • ${data.language}`;
+      G('downloadSection').style.display = ''; G('stepNum3').classList.add('done'); G('stepNum3').textContent = '✓';
       renderSubtitles(srtEntries);
-
-      const btn = G('btnStart');
-      btn.disabled = false;
-      btn.textContent = '🚀 Bắt đầu tách phụ đề song song';
-      document.title = `✅ ${total} sub — SubExtractor`;
+      G('btnStart').disabled = false; G('btnStart').textContent = '🚀 Bắt đầu tách phụ đề';
+      document.title = `✅ ${data.total_segments} sub — SubExtractor`;
     }
 
     function renderSubtitles(entries) {
-      G('emptyState').style.display = 'none';
-      const area = G('subtitleArea');
-      area.style.display = 'flex';
-      const list = G('subList');
-      list.innerHTML = '';
-
+      const list = G('subList'); list.innerHTML = '';
       entries.forEach((entry, i) => {
-        const row = document.createElement('div');
-        row.className = 'sub-row fade-in';
-        row.style.animationDelay = Math.min(i * 15, 500) + 'ms';
-        const start = entry.start || '00:00:00,000';
-        const end = entry.end || '00:00:00,000';
-        row.innerHTML = `
-          <div class="sub-cell col-idx">${entry.index || i + 1}</div>
-          <div class="sub-cell col-time">${start} → ${end}</div>
-          <div class="sub-cell col-text">
-            <textarea class="sub-textarea" rows="1" data-idx="${i}"
-              oninput="autoResize(this); updateEntry(${i}, this.value)">${entry.text || ''}</textarea>
-          </div>
-        `;
+        const row = document.createElement('div'); row.className = 'sub-row fade-in';
+        row.innerHTML = `<div class="sub-cell col-idx">${entry.index || i+1}</div><div class="sub-cell col-time">${entry.start || ''} → ${entry.end || ''}</div><div class="sub-cell col-text"><textarea class="sub-textarea" rows="1" oninput="autoResize(this); updateEntry(${i}, this.value)">${entry.text || ''}</textarea></div>`;
         list.appendChild(row);
-        setTimeout(() => {
-          const ta = row.querySelector('.sub-textarea');
-          if (ta) autoResize(ta);
-        }, 10);
+        setTimeout(() => { const ta = row.querySelector('.sub-textarea'); if (ta) autoResize(ta); }, 10);
       });
     }
 
     function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-
-    function updateEntry(idx, text) {
-      if (srtEntries[idx]) { srtEntries[idx].text = text; regenerateSRT(); }
-    }
-
-    function regenerateSRT() {
-      const lines = [];
-      srtEntries.forEach((entry, i) => {
-        const idx = entry.index || (i + 1);
-        const start = entry.start || '00:00:00,000';
-        const end = entry.end || '00:00:00,000';
-        const text = (entry.text || '').trim();
-        if (text) { lines.push(idx); lines.push(start + ' --> ' + end); lines.push(text); lines.push(''); }
-      });
-      srtContent = lines.join('\n');
-    }
-
-    function downloadSRT() {
-      if (!srtContent) return;
-      const blob = new Blob([srtContent], { type: 'text/plain; charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = srtFileName;
-      a.click();
-      URL.revokeObjectURL(a.href);
-      setStatus('💾 Đã tải ' + srtFileName);
-    }
-
-    function copySRT() {
-      if (!srtContent) return;
-      navigator.clipboard.writeText(srtContent).then(() => setStatus('📋 Đã copy'));
-    }
-
-    function setBadge(type, text) {
-      const el = G('badge');
-      el.className = 'badge badge-' + (type === 'work' ? 'work' : type === 'done' ? 'done' : type === 'err' ? 'err' : 'idle');
-      el.textContent = text;
-    }
-
-    function setProgress(percent, message) {
-      G('progressFill').style.width = percent + '%';
-      G('progressPercent').textContent = percent + '%';
-      if (message) G('progressLabel').textContent = message;
-    }
-
-    function setStatus(text) {
-      G('statusText').textContent = text;
-    }
-
+    function updateEntry(i, t) { if (srtEntries[i]) { srtEntries[i].text = t; regenerateSRT(); } }
+    function regenerateSRT() { srtContent = srtEntries.filter(e => e.text?.trim()).map((e, i) => `${i+1}\n${e.start} --> ${e.end}\n${e.text.trim()}`).join('\n\n') + '\n'; }
+    function downloadSRT() { if (!srtContent) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([srtContent], {type:'text/plain;charset=utf-8'})); a.download = srtFileName; a.click(); }
+    function copySRT() { if (srtContent) navigator.clipboard.writeText(srtContent).then(() => setStatus('📋 Copied!')); }
+    function setBadge(t, txt) { const el = G('badge'); el.className = `badge badge-${t}`; el.textContent = txt; }
+    function setProgress(p, msg) { G('progressFill').style.width = p + '%'; G('progressPercent').textContent = Math.round(p) + '%'; if (msg) G('progressLabel').textContent = msg; }
+    function setStatus(t) { G('statusText').textContent = t; }
     updateStartBtn();
   </script>
 </body>
